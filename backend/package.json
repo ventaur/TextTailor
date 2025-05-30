@@ -1,0 +1,12 @@
+{
+  "name": "ghost-texttailor-backend",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "@tryghost/admin-api": "^1.13.16",
+    "express": "^5.1.0"
+  }
+}
