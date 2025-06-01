@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghost Text Tailor</title>
+    <link rel="stylesheet" href="styles/app.css">
+</head>
+
+<body>
+    <header class="container">
+        <h1><span>Ghost</span> Text Tailor</h1>
+    </header>
+
+    <main class="container">
+        <p>
+            Text Tailor allows you to perform a massive find and replace in your Ghost post and page content. Just provide
+            the text you want to replace and the text to replace it with. The tailor will take care of the rest!
+        </p>
+
+        <div class="alert alert-warning with-icon">
+            This tool's actions cannot be undone. It is highly recommended that you 
+            <a href="https://ghost.org/docs/faq/manual-backup/">backup your site's content</a> now, before making these changes.
+        </div>
+
+        <p>
+            A custom integration is required in order to use your Admin API key for the changes. Learn how to 
+            <a href="https://ghost.org/integrations/custom-integrations/#add-a-new-custom-integration">create a custom integration and acquire your Admin API key</a>. 
+            Be ready to copy and paste your Admin API Key and API URL below.
+        </p>
+
+        <form>
+            <div class="input-group">
+                <label for="adminKey">Admin API key</label>
+                <input type="text" id="adminKey" name="adminKey" required>
+                <div class="hint">A Ghost Admin API key, created in your admin panel under Settings > Integrations > Custom.
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="apiUrl">API URL</label>
+                <input type="text" id="apiUrl" name="apiUrl" required>
+                <div class="hint">The URL used to access your site's API. You can find it with your Admin API key.</div>
+            </div>
+            <div class="input-group">
+                <label for="searchText">Text to find and replace</label>
+                <input type="text" id="searchText" name="searchText" required>
+                <div class="hint">This text must match entirely; no partial matches. Case does not matter.</div>
+            </div>
+            <div class="input-group">
+                <label for="replacementText">Replacement text</label>
+                <input type="text" id="replacementText" name="replacementText" required>
+            </div>
+
+            <button>Start</button>
+        </form>
+    </main>
+
+</body>
+
+</html>
