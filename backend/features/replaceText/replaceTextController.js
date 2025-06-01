@@ -4,6 +4,15 @@ import GhostAdminAPI from '@tryghost/admin-api'
 const browseLimit = 30;
 
 
+/**
+ * Replaces specified text in articles (posts and pages).
+ * Retrieves articles in batches, checks if the text to replace exists in each article,
+ * and updates the article content with the replacement text if found.
+ *
+ * @param {Object} apiForArticles - The Ghost Admin API resource instance for posts or pages.
+ * @param {string} textToReplace - The text to be replaced in the articles.
+ * @param {string} replacementText - The text to replace with in the articles.
+ */
 async function replaceTextInArticles(apiForArticles, textToReplace, replacementText) {
     let page = 1;
     let hasMore = false;
@@ -33,6 +42,13 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
     } while (hasMore);
 }
 
+/**
+ * Controller function to handle the text replacement in articles.
+ * It validates the request parameters, retrieves articles, and replaces the specified text (if found).
+ *
+ * @param {import('express').Request} req - The request object containing the parameters.
+ * @param {import('express').Response} res - The response object to send back the result.
+ */
 export async function replaceText (req, res) {
     // Get request parameters and valiate them.
     const { adminKey, apiUrl, textToReplace, replacementText } = req.body;
