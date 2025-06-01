@@ -1,0 +1,67 @@
+:root {
+    /* Colors by name */
+    --white: #fff;
+    --black: #000;
+
+    /* Colors */
+    --color-bg: #fff;
+    --color-border: #ced4da;
+    --color-text: #30353c;
+    --color-text-inverted: #eae8e5;
+    --color-muted: #6c757d;
+
+    --color-primary: #15171A;
+    --color-primary-hover: color-mix(in srgb, var(--color-primary), var(--white) 20%);
+
+    --color-button-text: #fff;
+    --color-link-text: color-mix(in srgb, var(--color-primary), var(--white) 10%);
+    --color-link-text-hover: color-mix(in srgb, var(--color-link-text), var(--white) 20%);
+
+    --color-error: hsl(355, 61%, 21%);
+    --color-error-bg: hsl(355, 71%, 91%);
+    --color-error-border: hsl(355, 71%, 81%);
+
+    --color-success: hsl(153, 69%, 13%);
+    --color-success-bg: hsl(153, 31%, 86%);
+    --color-success-border: hsl(153, 31%, 73%);
+
+    --color-warning: hsl(46, 100%, 20%);
+    --color-warning-bg: hsl(46, 100%, 90%);
+    --color-warning-border: hsl(46, 100%, 80%);
+
+    --color-input-bg: color-mix(in srgb, var(--color-bg), var(--black) 5%);
+
+    /* Font sizes (our HTML base font size is 16px) */
+    --font-size-xs: 0.75rem;   /* 12px */
+    --font-size-sm: 0.875rem;  /* 14px */
+    --font-size-base: 1rem;    /* 16px */
+    --font-size-lg: 1.125rem;  /* 18px */
+    --font-size-xl: 1.5rem;    /* 24px */
+    --font-size-xxl: 2rem;     /* 32px */
+
+    /* Spacing scale (vertical rhythm / layout) */
+    --spacing-xxs: 0.25rem;   /* 4px */
+    --spacing-xs: 0.5rem;     /* 8px */
+    --spacing-sm: 0.75rem;    /* 12px */
+    --spacing-md: 1rem;       /* 16px */
+    --spacing-lg: 1.5rem;     /* 24px */
+    --spacing-xl: 2rem;       /* 32px */
+    --spacing-xxl: 3rem;      /* 48px */
+
+    /* Border radius */
+    --radius-xs: 0.25rem;   /* 4px */
+    --radius-sm: 0.375rem;  /* 6px */
+    --radius-md: 0.5rem;    /* 8px */
+    --radius-lg: 1rem;      /* 16px */
+
+    /* Line heights and layout */
+    --line-height-base: 1.5;
+    --container-width: 90%;
+    --container-max-width: 50rem; /* ~1024px */
+
+    /* Font weights */
+    --font-weight-normal: 400;
+    --font-weight-bold: 600;
+
+    --logo-url: url('/images/ghost-logo-dark-xs.png');
+}

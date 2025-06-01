@@ -1,0 +1,168 @@
+@import "modern-normalize.css";
+
+@import "variables.css";
+
+
+html, body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: var(--font-weight-bold);
+    line-height: 1.15;
+    margin: 0;
+    margin-bottom: 1em;
+}
+h1 {
+    font-size: var(--font-size-xxl);
+}
+h2 {
+    font-size: var(--font-size-xl);
+}
+h3 {
+    font-size: var(--font-size-large);
+}
+h4, h5, h6 {
+    font-size: var(--font-size-base);
+}
+
+p {
+    font-size: var(--font-size-base);
+    margin: 0;
+    margin-bottom: var(--spacing-lg);
+}
+
+a {
+    color: var(--color-link-text);
+    text-decoration: underline;
+}
+a:hover {
+    color: var(--color-link-text-hover);
+}
+
+/* Containers */
+.container {
+    margin: var(--spacing-lg) auto;
+    padding: var(--spacing-xxs) var(--spacing-md);
+    width: var(--container-width);
+    max-width: var(--container-max-width);
+}
+
+.alert {
+    --alert-border-color: transparent;
+    --alert-bg-color: transparent;
+    --alert-color: inherit;
+    
+    background-color: var(--alert-bg-color);
+    border: 0.1rem solid var(--alert-border-color);
+    border-radius: var(--radius-sm);
+    color: var(--alert-color);
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-md);
+}
+.alert-error {
+    --alert-bg-color: var(--color-error-bg);
+    --alert-color: var(--color-error);
+    --alert-border-color: var(--color-error-border);
+}
+.alert-success {
+    --alert-bg-color: var(--color-success-bg);
+    --alert-color: var(--color-success);
+    --alert-border-color: var(--color-success-border);
+}
+.alert-warning {
+    --alert-bg-color: var(--color-warning-bg);
+    --alert-color: var(--color-warning);
+    --alert-border-color: var(--color-warning-border);
+}
+
+/* Forms */
+.input-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+label {
+    display: block;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-xss);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    background-color: var(--color-input-bg);
+    border: 0.1rem solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    width: 100%;
+    transition: border-color 0.2s ease-in-out;
+}
+input:focus {
+    background-color: var(--color-bg);
+    border-color: var(--color-primary);
+    outline: none;
+}
+
+button {
+    background-color: var(--color-primary);
+    color: var(--color-button-text);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    padding: var(--spacing-sm) var(--spacing-md);
+    transition: background-color 0.2s ease;
+}
+button:hover {
+    background-color: var(--color-primary-hover);
+}
+
+form .hint {
+    color: var(--color-muted);
+    font-size: var(--font-size-xs);
+    margin-top: var(--spacing-xsx);
+}
+
+form .error-message {
+    color: var(--color-error);
+    font-size: var(--font-size-sm);
+    margin-top: var(--spacing-xss);
+    margin-bottom: var(--spacing-sm);
+}
+
+
+/* Miscellaneous */
+header {
+    text-align: center;
+}
+header h1 {
+    background-image: var(--logo-url);
+    background-repeat: no-repeat;
+    background-size: 3.5em auto;
+    background-position: calc(50% - 3.2em) center;
+    text-indent: 3.2em;
+    margin: 0;
+}
+header h1 span {
+    /* Hide the text visually but keep it accessible */
+    position: absolute;
+    text-indent: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.color-scheme-toggle {
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    position: fixed;
+    top: var(--spacing-md);
+    right: var(--spacing-md);
+}
