@@ -363,6 +363,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ghost-texttailor-backend@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "ghost-texttailor-backend@workspace:."
+  dependencies:
+    "@tryghost/admin-api": "npm:^1.13.16"
+    express: "npm:^5.1.0"
+  languageName: unknown
+  linkType: soft
+
 "gopd@npm:^1.2.0":
   version: 1.2.0
   resolution: "gopd@npm:1.2.0"
@@ -805,15 +814,6 @@ __metadata:
   checksum: 10c0/34378b207a1620a24804ce8b5d230fea0c279f00b18a7209646d5d47e419d1cc23e7cbf33a25a1e51ac38973dc2ac2e1e9c647a8e481ef365f77668d72becfd0
   languageName: node
   linkType: hard
-
-"texttailor-backend@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "texttailor-backend@workspace:."
-  dependencies:
-    "@tryghost/admin-api": "npm:^1.13.16"
-    express: "npm:^5.1.0"
-  languageName: unknown
-  linkType: soft
 
 "toidentifier@npm:1.0.1":
   version: 1.0.1
