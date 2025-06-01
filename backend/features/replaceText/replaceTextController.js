@@ -16,6 +16,11 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
         // Iterate through each article and replace the text.
         // * Promise.all is used to perform the replacements/updates in "parallel".
         await Promise.all(articles.map(async (article) => {
+            // Check if the article's content contains the text to replace.
+            if (!article.html || !article.html.includes(textToReplace)) {
+                return;
+            }
+
             const updatedContent = article.html.replaceAll(textToReplace, replacementText);
             article.html = updatedContent;
 
@@ -55,10 +60,10 @@ export async function replaceText (req, res) {
         await replaceTextInArticles(api.posts, textToReplace, replacementText);
         await replaceTextInArticles(api.pages, textToReplace, replacementText);
 
-        return res.status(200).json({ message: 'Posts updated successfully.' });
+        return res.status(200).json({ message: 'Articles were updated successfully.' });
     } catch (error) {
         // Any errors during the process will be caught here.
-        console.error(`Error replacing text in posts: ${error.message}`);
+        console.error(`Error replacing text in articles: ${error.message}`);
         return res.status(500).json({ error: error.message });
     }
 };
