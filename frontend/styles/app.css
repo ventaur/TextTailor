@@ -3,6 +3,10 @@
 @import "variables.css";
 
 
+:root {
+    color-scheme: light dark;
+}
+
 html, body {
     background-color: var(--color-bg);
     color: var(--color-text);

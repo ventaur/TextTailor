@@ -1,33 +1,33 @@
 :root {
     /* Colors by name */
-    --white: #fff;
-    --black: #000;
+    --white: light-dark(#fff, #000);
+    --black: light-dark(#000, #fff);
 
     /* Colors */
-    --color-bg: #fff;
-    --color-border: #ced4da;
-    --color-text: #30353c;
-    --color-text-inverted: #eae8e5;
-    --color-muted: #6c757d;
+    --color-bg: light-dark(#fff, #212529);
+    --color-border: light-dark(#ced4da, #3c3f42);
+    --color-text: light-dark(#30353c, #c1c3c5);
+    --color-text-inverted: light-dark(#eae8e5, #0e0c0a);
+    --color-muted: light-dark(#6c757d, #adb5bd);
 
-    --color-primary: #15171A;
+    --color-primary: light-dark(#15171A, #ced4d9);
     --color-primary-hover: color-mix(in srgb, var(--color-primary), var(--white) 20%);
 
-    --color-button-text: #fff;
+    --color-button-text: light-dark(#fff, #111);
     --color-link-text: color-mix(in srgb, var(--color-primary), var(--white) 10%);
     --color-link-text-hover: color-mix(in srgb, var(--color-link-text), var(--white) 20%);
 
-    --color-error: hsl(355, 61%, 21%);
-    --color-error-bg: hsl(355, 71%, 91%);
-    --color-error-border: hsl(355, 71%, 81%);
+    --color-error: light-dark(hsl(355, 61%, 21%), hsl(355, 70%, 72%));
+    --color-error-bg: light-dark(hsl(355, 71%, 91%), hsl(355, 61%, 11%));
+    --color-error-border: light-dark(hsl(355, 71%, 81%), hsl(355, 61%, 32%));
 
-    --color-success: hsl(153, 69%, 13%);
-    --color-success-bg: hsl(153, 31%, 86%);
-    --color-success-border: hsl(153, 31%, 73%);
+    --color-success: light-dark(hsl(153, 69%, 13%), hsl(152, 31%, 59%));
+    --color-success-bg: light-dark(hsl(153, 31%, 86%), hsl(153, 69%, 6%));
+    --color-success-border: light-dark(hsl(153, 31%, 73%), hsl(152, 69%, 19%));
 
-    --color-warning: hsl(46, 100%, 20%);
-    --color-warning-bg: hsl(46, 100%, 90%);
-    --color-warning-border: hsl(46, 100%, 80%);
+    --color-warning: light-dark(hsl(46, 100%, 20%), hsl(45, 100%, 71%));
+    --color-warning-bg: light-dark(hsl(46, 100%, 90%), hsl(46, 95%, 10%));
+    --color-warning-border: light-dark(hsl(46, 100%, 80%), hsl(45, 95%, 31%));
 
     --color-input-bg: color-mix(in srgb, var(--color-bg), var(--black) 5%);
 
@@ -62,6 +62,11 @@
     /* Font weights */
     --font-weight-normal: 400;
     --font-weight-bold: 600;
+}
 
+:root[data-actual-color-scheme='light'] {
     --logo-url: url('/images/ghost-logo-dark-xs.png');
+}
+:root[data-actual-color-scheme='dark'] {
+    --logo-url: url('/images/ghost-logo-light-xs.png');
 }
