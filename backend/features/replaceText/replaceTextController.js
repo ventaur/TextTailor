@@ -1,5 +1,5 @@
 const replaceText = (req, res) => {
-  res.json({ message: 'Replace the text!' });
+    res.json({ message: 'Replace the text!' });
 };
 
 
