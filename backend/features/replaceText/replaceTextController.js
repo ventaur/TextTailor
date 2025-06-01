@@ -1,5 +1,7 @@
 import GhostAdminAPI from '@tryghost/admin-api'
 
+import escapeGhostFilterString from '../../lib/escape.js';
+
 
 const browseLimit = 30;
 
@@ -18,18 +20,17 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
     let hasMore = false;
 
     do {
-        // Retrieve all posts and pages.
-        // ** Can we use a filter to only get posts with specific text? **
-        const articles = await apiForArticles.browse({ limit: browseLimit, page: page });
+        // Retrieve matching articles (paginated).
+        // NOTE: The filter uses `plaintext` to search for the text in the article content.
+        const articles = await apiForArticles.browse({
+            filter: `plaintext:~'${escapeGhostFilterString(textToReplace)}'`,
+            limit: browseLimit,
+            page: page
+        });
 
         // Iterate through each article and replace the text.
-        // * Promise.all is used to perform the replacements/updates in "parallel".
+        // NOTE: Promise.all is used to perform the replacements/updates in "parallel".
         await Promise.all(articles.map(async (article) => {
-            // Check if the article's content contains the text to replace.
-            if (!article.html || !article.html.includes(textToReplace)) {
-                return;
-            }
-
             const updatedContent = article.html.replaceAll(textToReplace, replacementText);
             article.html = updatedContent;
 
