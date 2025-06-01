@@ -68,7 +68,7 @@ export async function replaceText (req, res) {
 
     try {
         const api = new GhostAdminAPI({
-            url: adminUrl,
+            url: apiUrl,
             key: adminKey,
             version: "v5.0"
         });
