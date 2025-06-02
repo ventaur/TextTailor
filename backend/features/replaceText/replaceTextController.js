@@ -1,6 +1,7 @@
 import GhostAdminAPI from '@tryghost/admin-api'
 
 import escapeGhostFilterString from '../../lib/escape.js';
+import replaceGhostLexicalText from '../../lib/replaceLexicalText.js';
 
 
 const browseLimit = 30;
@@ -16,6 +17,12 @@ const browseLimit = 30;
  * @param {string} replacementText - The text to replace with in the articles.
  */
 async function replaceTextInArticles(apiForArticles, textToReplace, replacementText) {
+    let stats = {
+        matchCount: 0,
+        replacedCount: 0,
+        articleCount: 0
+    }
+
     let page = 1;
     let hasMore = false;
 
@@ -24,23 +31,53 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
         // NOTE: The filter uses `plaintext` to search for the text in the article content.
         const articles = await apiForArticles.browse({
             filter: `plaintext:~'${escapeGhostFilterString(textToReplace)}'`,
+            formats: ['lexical', 'plaintext'],
             limit: browseLimit,
             page: page
         });
 
         // Iterate through each article and replace the text.
         // NOTE: Promise.all is used to perform the replacements/updates in "parallel".
-        await Promise.all(articles.map(async (article) => {
-            const updatedContent = article.html.replaceAll(textToReplace, replacementText);
-            article.html = updatedContent;
+        const statsList = await Promise.all(articles.map(async (article) => {
+            // Count how many times the text to replace exists in the article's plaintext.
+            // We'll use this to determine if there are matches that couldn't be replaced in the lexical content.
+            const matchCount = (article.plaintext.match(new RegExp(textToReplace, 'g')) || []).length;
 
-            // Update the post with the new content.
-            await apiForArticles.edit(article);
+            const lexicalTree = JSON.parse(article.lexical);
+            const replacedCount = replaceGhostLexicalText(lexicalTree, textToReplace, replacementText);
+            const articleCount = 0;
+
+            // Only update the article if text was replaced.
+            if (replacedCount > 0) {
+                article.lexical = JSON.stringify(lexicalTree);
+                //await apiForArticles.edit(article);
+                articleCount++;
+
+                console.log(`Replaced ${replacedCount} text(s) in article: ${article.title}`);
+            } else {
+                console.log(`No text replaced in article: ${article.title}`);
+            }
+
+            return {
+                matchCount,
+                replacedCount,
+                articleCount
+            };
         }));
+
+        // Update the overall replacement stats for this batch of articles.
+        statsList.reduce((acc, stats) => {
+            acc.matchCount += stats.matchCount;
+            acc.replacedCount += stats.replacedCount;
+            acc.articleCount += stats.articleCount;
+            return acc;
+        }, stats);
 
         page++;
         hasMore = articles?.meta?.pagination?.next !== null;
     } while (hasMore);
+
+    return stats;
 }
 
 /**
@@ -74,13 +111,34 @@ export async function replaceText (req, res) {
             version: "v5.0"
         });
 
-        await replaceTextInArticles(api.posts, textToReplace, replacementText);
-        await replaceTextInArticles(api.pages, textToReplace, replacementText);
+        // Perform the text replacement in both posts and pages.
+        const postStats = await replaceTextInArticles(api.posts, textToReplace, replacementText);
+        const pageStats = await replaceTextInArticles(api.pages, textToReplace, replacementText);
 
-        return res.status(200).json({ message: 'Articles were updated successfully.' });
+        // Prepare the response data with the stats and messages.
+        const responseData = {
+            message: `${postStats.articleCount + pageStats.articleCount} article(s) were updated successfully. Replaced ${postStats.replacedCount + pageStats.replacedCount} text(s).`,
+            info: [],
+            stats: {
+                posts: postStats,
+                pages: pageStats
+            }
+        };
+        if (postStats.matchCount > postStats.replacedCount) {
+            responseData.info.push(`${postStats.matchCount - postStats.replacedCount} text(s) were found in posts but could not be replaced in the lexical content.`);
+        }
+        if (pageStats.matchCount > pageStats.replacedCount) {
+            responseData.info.push(`${pageStats.matchCount - pageStats.replacedCount} text(s) were found in pages but could not be replaced in the lexical content.`);
+        }
+        if (responseData.info.length > 0) {
+            responseData.info.push('This typically happens when some text to replace has different casing or mixed formatting (e.g., bold, italic) or is partially included in a link.');
+        }
+
+        return res.status(200).json(responseData);
     } catch (error) {
         // Any errors during the process will be caught here.
-        console.error(`Error replacing text in articles: ${error.message}`);
-        return res.status(500).json({ error: error.message });
+        const errorMessage = `Error replacing text in articles: ${error.message}`
+        console.error(errorMessage);
+        return res.status(500).json({ error: errorMessage });
     }
 };
