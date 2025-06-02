@@ -50,7 +50,7 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
             // Only update the article if text was replaced.
             if (replacedCount > 0) {
                 article.lexical = JSON.stringify(lexicalTree);
-                //await apiForArticles.edit(article);
+                await apiForArticles.edit(article);
                 articleCount++;
 
                 console.log(`Replaced ${replacedCount} text(s) in article: ${article.title}`);
