@@ -1,10 +1,11 @@
 import GhostAdminAPI from '@tryghost/admin-api'
 
+import { createReplaceWithTally, replaceGhostLexicalText } from '../../lib/replacers.js';
 import escapeGhostFilterString from '../../lib/escape.js';
-import replaceGhostLexicalText from '../../lib/replaceLexicalText.js';
+import { countMatches } from '../../lib/matchers.js';
 
 
-const browseLimit = 30;
+const BrowseLimit = 30;
 
 
 /**
@@ -17,11 +18,7 @@ const browseLimit = 30;
  * @param {string} replacementText - The text to replace with in the articles.
  */
 async function replaceTextInArticles(apiForArticles, textToReplace, replacementText) {
-    let stats = {
-        matchCount: 0,
-        replacedCount: 0,
-        articleCount: 0
-    }
+    let stats = { matchCount: 0, replacedCount: 0, articleCount: 0 }
 
     let page = 1;
     let hasMore = false;
@@ -29,24 +26,38 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
     do {
         // Retrieve matching articles (paginated).
         // NOTE: The filter uses `plaintext` to search for the text in the article content.
+        const filterText = escapeGhostFilterString(textToReplace);
         const articles = await apiForArticles.browse({
-            filter: `plaintext:~'${escapeGhostFilterString(textToReplace)}'`,
+            filter: `title:~'${filterText}',custom_excerpt:~'${filterText}',plaintext:~'${filterText}'`,
+            order: 'created_at ASC',
             formats: ['lexical', 'plaintext'],
-            limit: browseLimit,
+            limit: BrowseLimit,
             page
         });
 
         // Iterate through each article and replace the text.
         // NOTE: Promise.all is used to perform the replacements/updates in "parallel".
         const statsList = await Promise.all(articles.map(async (article) => {
-            // Count how many times the text to replace exists in the article's plaintext.
+            // Count how many times the text to replace exists in the article's plaintext vs html or lexical.
             // We'll use this to determine if there are matches that couldn't be replaced in the lexical content.
-            const matchCount = (article.plaintext.match(new RegExp(textToReplace, 'g')) || []).length;
-
+            let matchCount = countMatches(article.plaintext, textToReplace);
+            matchCount += countMatches(article.title, textToReplace);
+            matchCount += countMatches(article.excerpt, textToReplace);
+            if (matchCount === 0) {
+                console.log(`No matches found in article: ${article.title}`);
+                return { matchCount, replacedCount: 0, articleCount: 0 };
+            }
+            
+            // Perform the replacements.
+            const replacerWithTally = createReplaceWithTally();
             const lexicalTree = JSON.parse(article.lexical);
-            const replacedCount = replaceGhostLexicalText(lexicalTree, textToReplace, replacementText);
+            replaceGhostLexicalText(lexicalTree, textToReplace, replacementText, replacerWithTally);
+            article.title = replacerWithTally.replaceAll(article.title, textToReplace, replacementText);
+            article.custom_excerpt = replacerWithTally.replaceAll(article.custom_excerpt, textToReplace, replacementText);
+            
+            let replacedCount = replacerWithTally.getCount();
             let articleCount = 0;
-
+            
             // Only update the article if text was replaced.
             if (replacedCount > 0) {
                 article.lexical = JSON.stringify(lexicalTree);
@@ -55,14 +66,10 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
 
                 console.log(`Replaced ${replacedCount} text(s) in article: ${article.title}`);
             } else {
-                console.log(`No text replaced in article: ${article.title}`);
+                console.log(`Matches found, but no text replaced in article: ${article.title}`);
             }
 
-            return {
-                matchCount,
-                replacedCount,
-                articleCount
-            };
+            return { matchCount, replacedCount, articleCount };
         }));
 
         // Update the overall replacement stats for this batch of articles.
