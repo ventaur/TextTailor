@@ -11,11 +11,11 @@ import { mutateDeepByKey } from './mutateDeep.js';
  * @returns {Object} - The updated lexical tree with the specified text replaced.
  */
 export default function replaceGhostLexicalText(lexicalTree, textToReplace, replacementText) {
-    const replacedCount = 0;
+    let replacedCount = 0;
 
     // Traverse the lexical tree and replace text in all 'text' keys.
     mutateDeepByKey(lexicalTree, 'text', (val) => {
-        return val.replaceAll(textToReplace, replacementText, (_) => {
+        return val.replaceAll(textToReplace, _ => {
             replacedCount++;
             return replacementText;
         });

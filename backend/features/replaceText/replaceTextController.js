@@ -45,7 +45,7 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
 
             const lexicalTree = JSON.parse(article.lexical);
             const replacedCount = replaceGhostLexicalText(lexicalTree, textToReplace, replacementText);
-            const articleCount = 0;
+            let articleCount = 0;
 
             // Only update the article if text was replaced.
             if (replacedCount > 0) {
