@@ -33,7 +33,7 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
             filter: `plaintext:~'${escapeGhostFilterString(textToReplace)}'`,
             formats: ['lexical', 'plaintext'],
             limit: browseLimit,
-            page: page
+            page
         });
 
         // Iterate through each article and replace the text.
