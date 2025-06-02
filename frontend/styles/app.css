@@ -70,6 +70,19 @@ a:hover {
     margin-bottom: var(--spacing-lg);
     padding: var(--spacing-md);
 }
+.alert.with-icon {
+    padding-left: calc(var(--spacing-md) + 2.5em);
+    position: relative;
+}
+.alert.with-icon .icon {
+    position: absolute;
+    left: var(--spacing-md);
+    top: calc(50% - 1.25em);
+    width: 1.5em;
+    height: 1.5em;
+    background-repeat: no-repeat;
+    background-size: contain;
+}
 .alert-error {
     --alert-bg-color: var(--color-error-bg);
     --alert-color: var(--color-error);
@@ -84,6 +97,23 @@ a:hover {
     --alert-bg-color: var(--color-warning-bg);
     --alert-color: var(--color-warning);
     --alert-border-color: var(--color-warning-border);
+}
+.alert-info {
+    --alert-bg-color: var(--color-info-bg);
+    --alert-color: var(--color-info);
+    --alert-border-color: var(--color-info-border);
+}
+
+.alert-warning.with-icon::before {
+    content: '';
+    position: absolute;
+    left: var(--spacing-md);
+    top: calc(50% - 1.25em);
+    width: 2.5em;
+    height: 2.5em;
+    background-image: var(--icon-warning);
+    background-repeat: no-repeat;
+    background-size: contain;
 }
 
 /* Forms */

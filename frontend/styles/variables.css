@@ -29,6 +29,10 @@
     --color-warning-bg: light-dark(hsl(46, 100%, 90%), hsl(46, 95%, 10%));
     --color-warning-border: light-dark(hsl(46, 100%, 80%), hsl(45, 95%, 31%));
 
+    --color-info: light-dark(hsl(190, 90%, 20%), hsl(190, 88%, 70%));
+    --color-info-bg: light-dark(hsl(191, 88%, 90%), hsl(191, 88%, 10%));
+    --color-info-border: light-dark(hsl(190, 88%, 80%), hsl(190, 88%, 80%));
+
     --color-input-bg: color-mix(in srgb, var(--color-bg), var(--black) 5%);
 
     /* Font sizes (our HTML base font size is 16px) */
