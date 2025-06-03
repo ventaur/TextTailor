@@ -1,4 +1,6 @@
 import express from 'express';
+import cors from 'cors';
+
 import replaceTextRoute from './features/replaceText/replaceTextRoute.js';
 import jobProgressRoute from './features/jobProgress/jobProgressRoute.js';
 import jobCancelRoute from './features/jobCancel/jobCancelRoute.js';
@@ -9,6 +11,11 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(cors({
+    origin: '*',
+    methods: ['POST', 'GET', 'OPTIONS'],
+    allowedHeaders: ['Content-Type']
+}));
 
 
 // Endpoints
