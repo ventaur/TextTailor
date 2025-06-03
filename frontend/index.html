@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ghost Text Tailor</title>
     <link rel="stylesheet" href="styles/app.css">
-    <script src="js/color-scheme.js"></script>
+    <script src="js/colorScheme.js"></script>
+    <script src="js/main.js" defer></script>
 </head>
 
 <body>
@@ -65,7 +66,16 @@
                 <input type="text" id="replacementText" name="replacementText" required>
             </div>
 
-            <button>Start</button>
+            <div class="button-group">
+                <label id="postStatus">
+                    <progress id="postProgress" value="0" max="100"></progress>
+                </label>
+                <label id="pageStatus">
+                    <progress id="pageProgress" value="0" max="100"></progress>
+                </label>
+
+                <button>Start</button>
+            </div>
         </form>
     </main>
 
