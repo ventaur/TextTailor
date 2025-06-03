@@ -52,7 +52,7 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
             // We'll use this to determine if there are matches that couldn't be replaced in the lexical content.
             let matchCount = countMatches(article.plaintext, textToReplace);
             matchCount += countMatches(article.title, textToReplace);
-            matchCount += countMatches(article.excerpt, textToReplace);
+            matchCount += countMatches(article.custom_excerpt, textToReplace);
             if (matchCount === 0) {
                 console.log(`No matches found in article: ${article.title}`);
                 return { matchCount, replacedCount: 0, articleCount: 0 };
