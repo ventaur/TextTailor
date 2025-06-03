@@ -1,5 +1,6 @@
 import express from 'express';
 import replaceTextRoute from './features/replaceText/replaceTextRoute.js';
+import jobProgressRoute from './features/jobProgress/jobProgressRoute.js';
 
 
 const app = express();
@@ -13,6 +14,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/replace-text', replaceTextRoute);
+app.use('/job-progress', jobProgressRoute);
 
 
 const server = app.listen(port, () => {

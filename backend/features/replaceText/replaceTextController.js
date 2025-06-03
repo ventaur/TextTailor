@@ -1,8 +1,9 @@
 import GhostAdminAPI from '@tryghost/admin-api'
 
-import { createReplaceWithTally, replaceGhostLexicalText } from '../../lib/replacers.js';
-import escapeGhostFilterString from '../../lib/escape.js';
 import { countMatches } from '../../lib/matchers.js';
+import { createReplaceWithTally, replaceGhostLexicalText } from '../../lib/replacers.js';
+import { createJob } from '../../lib/jobManager.js';
+import escapeGhostFilterString from '../../lib/escape.js';
 
 
 const BrowseLimit = 30;
@@ -16,14 +17,21 @@ const BrowseLimit = 30;
  * @param {Object} apiForArticles - The Ghost Admin API resource instance for posts or pages.
  * @param {string} textToReplace - The text to be replaced in the articles.
  * @param {string} replacementText - The text to replace with in the articles.
+ * @param {import('../../lib/jobManager.js').JobControl} jobControl - Control object for job management, including progress and completion callbacks.
  */
-async function replaceTextInArticles(apiForArticles, textToReplace, replacementText) {
+async function replaceTextInArticles(apiForArticles, textToReplace, replacementText, jobControl) {
     let stats = { matchCount: 0, replacedCount: 0, articleCount: 0 }
 
     let page = 1;
     let hasMore = false;
 
     do {
+        // Bail out if the job is cancelled.
+        if (jobControl.abortSignal?.aborted) {
+            console.log('Job cancelled by user.');
+            return;
+        }
+
         // Retrieve matching articles (paginated).
         // NOTE: The filter uses `plaintext` to search for the text in the article content.
         const filterText = escapeGhostFilterString(textToReplace);
@@ -34,6 +42,8 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
             limit: BrowseLimit,
             page
         });
+
+        const totalArticles = articles?.meta?.pagination?.total || 0;
 
         // Iterate through each article and replace the text.
         // NOTE: Promise.all is used to perform the replacements/updates in "parallel".
@@ -80,15 +90,20 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
             return acc;
         }, stats);
 
+        // Emit progress updates.
+        const progress = Math.min(100, Math.floor((page * BrowseLimit / totalArticles) * 100));
+        jobControl.emitProgress(progress);
+
         page++;
         hasMore = articles?.meta?.pagination?.next !== null;
     } while (hasMore);
 
-    return stats;
+    // Emit completion of the job.
+    jobControl.emitComplete(stats);
 }
 
 /**
- * Controller function to handle the text replacement in articles.
+ * Handle the text replacement in articles.
  * It validates the request parameters, retrieves articles, and replaces the specified text (if found).
  *
  * @param {import('express').Request} req - The request object containing the parameters.
@@ -118,33 +133,20 @@ export async function replaceText (req, res) {
             version: "v5.0"
         });
 
-        // Perform the text replacement in both posts and pages.
-        const postStats = await replaceTextInArticles(api.posts, textToReplace, replacementText);
-        const pageStats = await replaceTextInArticles(api.pages, textToReplace, replacementText);
+        // Perform the text replacement in both posts and pages as jobs.
+        const postJobId = createJob(replaceTextInArticles, api.posts, textToReplace, replacementText);
+        const pageJobId = createJob(replaceTextInArticles, api.pages, textToReplace, replacementText);
 
-        // Prepare the response data with the stats and messages.
         const responseData = {
-            message: `${postStats.articleCount + pageStats.articleCount} article(s) were updated successfully. Replaced ${postStats.replacedCount + pageStats.replacedCount} text(s).`,
-            info: [],
-            stats: {
-                posts: postStats,
-                pages: pageStats
-            }
+            message: 'Text replacement jobs have been initiated successfully.',
+            postJobId,
+            pageJobId,
         };
-        if (postStats.matchCount > postStats.replacedCount) {
-            responseData.info.push(`${postStats.matchCount - postStats.replacedCount} text(s) were found in posts but could not be replaced in the lexical content.`);
-        }
-        if (pageStats.matchCount > pageStats.replacedCount) {
-            responseData.info.push(`${pageStats.matchCount - pageStats.replacedCount} text(s) were found in pages but could not be replaced in the lexical content.`);
-        }
-        if (responseData.info.length > 0) {
-            responseData.info.push('This typically happens when some text to replace has different casing or mixed formatting (e.g., bold, italic) or is partially included in a link.');
-        }
 
         return res.status(200).json(responseData);
     } catch (error) {
         // Any errors during the process will be caught here.
-        const errorMessage = `Error replacing text in articles: ${error.message}`
+        const errorMessage = `Error creating text replacement jobs: ${error.message}`
         console.error(errorMessage);
         return res.status(500).json({ error: errorMessage });
     }
