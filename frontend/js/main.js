@@ -1,3 +1,10 @@
+const actionContainer = document.querySelector('.action-container');
+const form = document.getElementById('formTextTailor');
+const cancelBtn = document.getElementById('btnCancel');
+const progressSection = document.getElementById('progressSection');
+const backdrop = document.querySelector('.backdrop');
+
+
 async function start() {
     const res = await fetch('/replace-text', { method: 'POST' });
     
@@ -37,3 +44,44 @@ function trackJob(jobId, progressElement, statusElement) {
         sse.close();
     });
 }
+
+
+function hideProgressSection() {
+    actionContainer.classList.remove('show-progress');
+    actionContainer.classList.add('is-sliding-out');
+
+    // Wait for transition to finish before cleaning up.
+    progressSection.addEventListener(
+        'transitionend',
+        function handleSlideOut(event) {
+            if (event.propertyName === 'transform') {
+                actionContainer.classList.remove('is-sliding-out');
+                progressSection.setAttribute('aria-hidden', 'true');
+                backdrop.setAttribute('aria-hidden', 'true');
+
+                progressSection.removeEventListener('transitionend', handleSlideOut);
+            }
+        }
+    );
+}
+
+
+form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    // Validate the form before proceeding.
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
+    // Call the start function to initiate the job.
+
+    actionContainer.classList.add('show-progress');
+    progressSection.setAttribute('aria-hidden', 'false');
+    backdrop.setAttribute('aria-hidden', 'false');
+});
+
+cancelBtn.addEventListener('click', () => {
+    hideProgressSection();
+});

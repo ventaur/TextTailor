@@ -44,39 +44,67 @@
             tags, or any other metadata.
         </div>
 
-        <form>
-            <div class="input-group">
-                <label for="adminKey">Admin API key</label>
-                <input type="password" id="adminKey" name="adminKey" required>
-                <div class="hint">A Ghost Admin API key, created in your admin panel under Settings > Integrations > Custom.
+        <section class="action-container">
+            <form id="formTextTailor" novalidate>
+                <h2>Text Replacement</h2>
+
+                <div class="input-group">
+                    <label for="adminKey">Admin API key</label>
+                    <input type="password" id="adminKey" name="adminKey" required>
+                    <div class="hint">A Ghost Admin API key, created in your admin panel under Settings > Integrations > Custom.
+                    </div>
                 </div>
-            </div>
-            <div class="input-group">
-                <label for="apiUrl">API URL</label>
-                <input type="text" id="apiUrl" name="apiUrl" required>
-                <div class="hint">The URL used to access your site's API. You can find it with your Admin API key.</div>
-            </div>
-            <div class="input-group">
-                <label for="textToReplace">Text to replace</label>
-                <input type="text" id="textToReplace" name="textToReplace" required>
-                <div class="hint">This text must match entirely; no partial matches. Be precise: 'Dog' and 'dog' are not the same.</div>
-            </div>
-            <div class="input-group">
-                <label for="replacementText">Replacement text</label>
-                <input type="text" id="replacementText" name="replacementText" required>
-            </div>
+                <div class="input-group">
+                    <label for="apiUrl">API URL</label>
+                    <input type="text" id="apiUrl" name="apiUrl" required>
+                    <div class="hint">The URL used to access your site's API. You can find it with your Admin API key.</div>
+                </div>
+                <div class="input-group">
+                    <label for="textToReplace">Text to replace</label>
+                    <input type="text" id="textToReplace" name="textToReplace" required>
+                    <div class="hint">This text must match entirely; no partial matches. Be precise: 'Dog' and 'dog' are not the same.</div>
+                </div>
+                <div class="input-group">
+                    <label for="replacementText">Replacement text</label>
+                    <input type="text" id="replacementText" name="replacementText" required>
+                </div>
 
-            <div class="button-group">
-                <label id="postStatus">
-                    <progress id="postProgress" value="0" max="100"></progress>
-                </label>
-                <label id="pageStatus">
-                    <progress id="pageProgress" value="0" max="100"></progress>
-                </label>
+                <div class="button-group">
+                    <button id="btnStart">Start</button>
+                </div>
+            </form>
 
-                <button>Start</button>
-            </div>
-        </form>
+            <div class="backdrop" aria-hidden="true"></div>
+
+            <section id="progressSection" aria-hidden="true">
+                <h2>Processing&hellip;</h2>
+
+                <div class="input-group">
+                    <label>Text to replace</label>
+                    <div id="textToReplaceStatus">Replace Me</div>
+                </div>
+
+                <div class="input-group">
+                    <label>Replacement text</label>
+                    <div id="replacementTextStatus">With This</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="postProgress">Posts Replacement Progress</label>
+                    <progress id="postProgress" value="25" max="100"></progress>
+                    <div id="postStatus" class="hint">Progress: 25%</div>
+                </div>
+                <div class="input-group">
+                    <label for="pageProgress">Pages Replacement Progress</label>
+                    <progress id="pageProgress" value="80" max="100"></progress>
+                    <div id="pageStatus" class="hint">Progress: 80%</div>
+                </div>
+
+                <div class="button-group">
+                    <button id="btnCancel">Cancel</button>
+                </div>
+            </section>
+        </section>
     </main>
 
 </body>

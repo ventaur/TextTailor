@@ -9,6 +9,7 @@
     --color-text: light-dark(#30353c, #c1c3c5);
     --color-text-inverted: light-dark(#eae8e5, #0e0c0a);
     --color-muted: light-dark(#6c757d, #adb5bd);
+    --color-emphasis: light-dark(#30cf43, #30cf43);
 
     --color-primary: light-dark(#15171A, #ced4d9);
     --color-primary-hover: color-mix(in srgb, var(--color-primary), var(--white) 20%);
