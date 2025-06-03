@@ -1,7 +1,7 @@
 import express from 'express';
 import replaceTextRoute from './features/replaceText/replaceTextRoute.js';
 import jobProgressRoute from './features/jobProgress/jobProgressRoute.js';
-//import setupDataForTestRoute from './features/setupDataForTest/setupDataForTestRoute.js';
+import setupDataForTestRoute from './features/setupDataForTest/setupDataForTestRoute.js';
 
 
 const app = express();
@@ -16,7 +16,11 @@ app.get('/', (req, res) => {
 
 app.use('/replace-text', replaceTextRoute);
 app.use('/job-progress', jobProgressRoute);
-//app.use('/setup-data-for-test', setupDataForTestRoute);
+
+if (process.env.NODE_ENV === 'development') {
+    app.use('/setup-data-for-test', setupDataForTestRoute);
+    console.log('Running in development mode. Setup data route is enabled.');
+}
 
 
 const server = app.listen(port, () => {
