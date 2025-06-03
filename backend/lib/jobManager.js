@@ -97,7 +97,7 @@ export function createJob(task, ...args) {
         job.progress = 100;
         emitter.emit(JobEvents.Complete, { status: job.status, progress: 100, data });
         
-        scheduleCleanup(jobId, JobCleanupDelayInMs);
+        scheduleCleanup(id, JobCleanupDelayInMs);
     };
 
     const emitFailure = (error) => {
@@ -105,7 +105,7 @@ export function createJob(task, ...args) {
         job.errorMessage = error instanceof Error ? error.message : String(error);
         emitter.emit(JobEvents.Error, { status: job.status, progress: job.progress, errorMessage: job.errorMessage });
 
-        scheduleCleanup(jobId, JobCleanupDelayInMs);
+        scheduleCleanup(id, JobCleanupDelayInMs);
     };
 
     /**
