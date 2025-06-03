@@ -1,3 +1,32 @@
+const ApiBaseUrl = 'http://localhost:3000';
+
+const UrlReplaceText = `${ApiBaseUrl}/replace-text`;
+const UrlJobProgress = `${ApiBaseUrl}/job-progress`;
+const UrlCancelJob = `${ApiBaseUrl}/cancel-job`;
+
+const ClassShowProgress = 'show-progress';
+const ClassIsSlidingOut = 'is-sliding-out';
+const ClassHidden = 'hidden';
+const AttrAriaHidden = 'aria-hidden';
+
+const EventBeforeUnload = 'beforeunload';
+const EventClick = 'click';
+const EventSubmit = 'submit';
+const EventTransitionend = 'transitionend';
+
+const JobEvents = {
+    Progress: 'progress',
+    Complete: 'complete',
+    Error: 'error',
+    Cancel: 'cancel',
+    Cleanup: 'cleanup'
+}
+
+const MethodPost = 'POST';
+const StringTrue = 'true';
+const StringFalse = 'false';
+
+
 const actionContainer = document.querySelector('.action-container');
 const form = document.getElementById('formTextTailor');
 const confirmReplaceAll = document.getElementById('confirmReplaceAll');
@@ -5,72 +34,88 @@ const cancelBtn = document.getElementById('btnCancel');
 const progressSection = document.getElementById('progressSection');
 const backdrop = document.querySelector('.backdrop');
 
-
+let completedJobCount = 0;
 async function start() {
     const res = await fetch('/replace-text', { method: 'POST' });
     
     const { postJobId, pageJobId } = await res.json();
+    const sse = new EventSource(`${UrlJobProgress}/${jobId}`);
 
-    const postProgress = document.getElementById('postProgress');
-    const postStatus = document.getElementById('postStatus');
-    const pageProgress = document.getElementById('pageProgress');
-    const pageStatus = document.getElementById('pageStatus');
-
-    trackJob(postJobId, postProgress, postStatus);
-    trackJob(pageJobId, pageProgress, pageStatus);
-}
-
-function trackJob(jobId, progressElement, statusElement) {
-    const sse = new EventSource(`/job-progress/${jobId}`);
-
-    sse.addEventListener('progress', (event) => {
+    const handleProgress = (event) => {
         const { progress } = JSON.parse(event.data);
         progressElement.value = progress;
         statusElement.textContent = `Progress: ${progress}%`;
-    });
+    };
 
-    sse.addEventListener('complete', () => {
+    const handleComplete = (event) => {
+        const { stats } = JSON.parse(event.data);
         progressElement.value = 100;
         statusElement.textContent = '✅ Status: Complete';
-    });
+        cleanup();
 
-    sse.addEventListener('error', (event) => {
-        const { errorMessage } = JSON.parse(event.data);
-        statusElement.textContent = `❌ Status: Error - ${errorMessage}`;
-        sse.close();
-    });
+        onJobComplete(jobType, stats);
+    };
 
-    sse.addEventListener('cleanup', () => {
-        statusElement.textContent = '🧹 Status: Cleaned up.';
+    const handleError = (event) => {
+        const { message } = JSON.parse(event?.data || '{ "message": "Unknown error" }');
+        statusElement.textContent = `❌ Status: Error - ${message}`;
+        cleanup();
+    };
+
+    const handleCancel = () => {
+        statusElement.textContent = '❌ Status: Cancelled';
+        cleanup();
+    };
+
+    const cleanup = () => {
         sse.close();
-    });
+        window.removeEventListener(EventBeforeUnload, handleUnload);
+    };
+
+    const handleUnload = () => {
+        sse.close();
+
+        if (completedJobCount < 2) {
+            navigator.sendBeacon(`${UrlCancelJob}/${jobId}`);
+        }
+    }
+
+    sse.addEventListener(JobEvents.Progress, handleProgress);
+    sse.addEventListener(JobEvents.Complete, handleComplete);
+    sse.addEventListener(JobEvents.Error, handleError);
+    sse.addEventListener(JobEvents.Cancel, handleCancel);
+
+    window.addEventListener(EventBeforeUnload, handleUnload);
 }
-
+function showProgressSection() {
+    actionContainer.classList.add(ClassShowProgress);
+    progressSection.setAttribute(AttrAriaHidden, StringFalse);
+    backdrop.setAttribute(AttrAriaHidden, StringFalse);
+}
 
 function hideProgressSection() {
     // Ensure the confirmation checkbox is unchecked to prevent accidental restarting.
     confirmReplaceAll.checked = false;
 
-    actionContainer.classList.remove('show-progress');
-    actionContainer.classList.add('is-sliding-out');
+    actionContainer.classList.remove(ClassShowProgress);
+    actionContainer.classList.add(ClassIsSlidingOut);
 
     // Wait for transition to finish before cleaning up.
     progressSection.addEventListener(
-        'transitionend',
+        EventTransitionend,
         function handleSlideOut(event) {
             if (event.propertyName === 'transform') {
-                actionContainer.classList.remove('is-sliding-out');
-                progressSection.setAttribute('aria-hidden', 'true');
-                backdrop.setAttribute('aria-hidden', 'true');
+                actionContainer.classList.remove(ClassIsSlidingOut);
+                progressSection.setAttribute(AttrAriaHidden, StringTrue);
+                backdrop.setAttribute(AttrAriaHidden, StringTrue);
 
-                progressSection.removeEventListener('transitionend', handleSlideOut);
+                progressSection.removeEventListener(EventTransitionend, handleSlideOut);
             }
         }
     );
 }
 
-
-form.addEventListener('submit', (e) => {
+form.addEventListener(EventSubmit, (e) => {
     e.preventDefault();
 
     // Validate the form before proceeding.
@@ -80,12 +125,4 @@ form.addEventListener('submit', (e) => {
     }
 
     // Call the start function to initiate the job.
-
-    actionContainer.classList.add('show-progress');
-    progressSection.setAttribute('aria-hidden', 'false');
-    backdrop.setAttribute('aria-hidden', 'false');
-});
-
-cancelBtn.addEventListener('click', () => {
-    hideProgressSection();
-});
+            showProgressSection();
