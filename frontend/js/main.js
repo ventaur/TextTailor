@@ -1,5 +1,6 @@
 const actionContainer = document.querySelector('.action-container');
 const form = document.getElementById('formTextTailor');
+const confirmReplaceAll = document.getElementById('confirmReplaceAll');
 const cancelBtn = document.getElementById('btnCancel');
 const progressSection = document.getElementById('progressSection');
 const backdrop = document.querySelector('.backdrop');
@@ -47,6 +48,9 @@ function trackJob(jobId, progressElement, statusElement) {
 
 
 function hideProgressSection() {
+    // Ensure the confirmation checkbox is unchecked to prevent accidental restarting.
+    confirmReplaceAll.checked = false;
+
     actionContainer.classList.remove('show-progress');
     actionContainer.classList.add('is-sliding-out');
 
