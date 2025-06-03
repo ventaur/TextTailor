@@ -58,7 +58,7 @@ export const JobEvents = {
  * @typedef {Object} JobControl
  * @property {string} jobId - Unique identifier for the job.
  * @property {{(progress: number): void}} emitProgress - Function to emit progress updates (0-100).
- * @property {{(data: Object): void}} emitComplete - Function to emit job completion.
+ * @property {{(stats: Object): void}} emitComplete - Function to emit job completion.
  * @property {{(error: Error): void}} emitFailure - Function to emit job failure with an error.
  * @property {AbortSignal} [abortSignal] - Optional abort signal to cancel the job.
  */
@@ -93,10 +93,10 @@ export function createJob(task, ...args) {
         emitter.emit(JobEvents.Progress, { status: job.status, progress });
     };
 
-    const emitComplete = (data) => {
+    const emitComplete = (stats) => {
         job.status = JobStatus.Complete;
         job.progress = 100;
-        emitter.emit(JobEvents.Complete, { status: job.status, progress: 100, data });
+        emitter.emit(JobEvents.Complete, { status: job.status, progress: 100, stats });
         
         scheduleCleanup(id, JobCleanupDelayInMs);
     };
