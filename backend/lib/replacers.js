@@ -11,7 +11,7 @@ export function createReplaceWithTally() {
 
     return {
         replaceAll(text, textToReplace, replacementText) {
-            return text.replaceAll(textToReplace, (...args) => {
+            return text?.replaceAll(textToReplace, (...args) => {
                 count++;
                 return typeof replacementText === 'function'
                     ? replacementText(...args)
