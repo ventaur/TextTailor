@@ -20,7 +20,7 @@ const BrowseLimit = 30;
  * @param {import('../../lib/jobManager.js').JobControl} jobControl - Control object for job management, including progress and completion callbacks.
  */
 async function replaceTextInArticles(apiForArticles, textToReplace, replacementText, jobControl) {
-    let stats = { matchCount: 0, replacedCount: 0, articleCount: 0 }
+    let totalStats = { matchCount: 0, replacedCount: 0, articleCount: 0 }
 
     let page = 1;
     let hasMore = false;
@@ -88,7 +88,7 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
             acc.replacedCount += stats.replacedCount;
             acc.articleCount += stats.articleCount;
             return acc;
-        }, stats);
+        }, totalStats);
 
         // Emit progress updates.
         const progress = Math.min(100, Math.floor((page * BrowseLimit / totalArticles) * 100));
@@ -99,7 +99,7 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
     } while (hasMore);
 
     // Emit completion of the job.
-    jobControl.emitComplete(stats);
+    jobControl.emitComplete(totalStats);
 }
 
 /**
