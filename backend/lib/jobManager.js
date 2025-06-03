@@ -131,7 +131,7 @@ export function createJob(task, ...args) {
             task(...args, jobControl)
         ).catch(emitFailure);
     } catch (error) {
-        emitFailure(error instanceof Error ? error : new Error(String(error)));
+        emitFailure(error);
     }
 
     return id;
