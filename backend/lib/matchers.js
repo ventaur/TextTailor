@@ -6,5 +6,5 @@
  * @returns {number} - The count of matches found in the text.
  */
 export function countMatches(text, textToMatch) {
-    return (text.match(new RegExp(textToMatch, 'g')) || []).length
+    return (text?.match(new RegExp(textToMatch, 'g')) || []).length
 }
