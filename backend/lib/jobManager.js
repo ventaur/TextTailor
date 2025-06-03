@@ -89,11 +89,13 @@ export function createJob(task, ...args) {
 
     // Provide the task with control hooks for its progress.
     const emitProgress = (progress) => {
+        if (job.status !== JobStatus.InProgress) return;
         job.progress = progress;
         emitter.emit(JobEvents.Progress, { status: job.status, progress });
     };
 
     const emitComplete = (stats) => {
+        if (job.status !== JobStatus.InProgress) return;
         job.status = JobStatus.Complete;
         job.progress = 100;
         emitter.emit(JobEvents.Complete, { status: job.status, progress: 100, stats });
@@ -102,6 +104,7 @@ export function createJob(task, ...args) {
     };
 
     const emitFailure = (error) => {
+        if (job.status !== JobStatus.InProgress) return;
         job.status = JobStatus.Failed;
         job.errorMessage = error instanceof Error ? error.message : String(error);
         emitter.emit(JobEvents.Error, { status: job.status, progress: job.progress, errorMessage: job.errorMessage });
