@@ -223,6 +223,10 @@ header h1 span {
     overflow: hidden;
 }
 
+.hidden {
+    display: none;
+}
+
 .color-scheme-toggle {
     font-size: var(--font-size-sm);
     padding: var(--spacing-xs) var(--spacing-sm);

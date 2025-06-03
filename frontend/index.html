@@ -83,7 +83,7 @@
             <div class="backdrop" aria-hidden="true"></div>
 
             <section id="progressSection" aria-hidden="true">
-                <h2>Processing&hellip;</h2>
+                <h2 id="progressHeading">Processing&hellip;</h2>
 
                 <div class="input-group">
                     <label>Text to replace</label>
@@ -105,6 +105,8 @@
                     <progress id="pageProgress" value="80" max="100"></progress>
                     <div id="pageStatus" class="hint">Progress: 80%</div>
                 </div>
+
+                <div id="summary"></div>
 
                 <div class="button-group">
                     <button id="btnCancel">Cancel</button>
