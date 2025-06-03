@@ -31,6 +31,7 @@ export const JobEvents = {
     Progress: 'progress',
     Complete: 'complete',
     Error: 'error',
+    Cancel: 'cancel',
     Cleanup: 'cleanup'
 }
 
@@ -145,7 +146,7 @@ export function cancelJob(jobId) {
     job.controller.abort();
     job.status = JobStatus.Cancelled;
     job.errorMessage = 'Job was cancelled.';
-    job.emitter.emit(JobEvents.Error, { status: job.status, progress: job.progress, errorMessage: job.errorMessage });
+    job.emitter.emit(JobEvents.Cancel, { status: job.status, progress: job.progress, message: job.message });
     
     scheduleCleanup(jobId, JobCleanupDelayInMs);
 
