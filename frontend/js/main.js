@@ -32,6 +32,7 @@ const StringTrue = 'true';
 const StringFalse = 'false';
 
 
+// Retrieve the necessary DOM elements.
 const actionContainer = document.querySelector('.action-container');
 const form = document.getElementById('formTextTailor');
 const confirmReplaceAll = document.getElementById('confirmReplaceAll');
@@ -53,6 +54,10 @@ let completedJobCount = 0;
 let summaryStats = {};
 
 
+/**
+ * Starts the text replacement job by sending a POST request to the server.
+ * It retrieves the job IDs for both post and page replacements, then tracks their progress.
+ */
 async function start() {
     const data = getFormData();
     const res = await fetch(UrlReplaceText, {
@@ -73,6 +78,13 @@ async function start() {
     trackJob(pageJobId, JobTypes.Page, pageProgress, pageStatus);
 }
 
+/**
+ * 
+ * @param {string} jobId - The unique identifier of the job to track.
+ * @param {string} jobType - The type of job (post or page).
+ * @param {Element} progressElement - The HTML element to update with the job's progress.
+ * @param {Element} statusElement - The HTML element to update with the job's status.
+ */
 function trackJob(jobId, jobType, progressElement, statusElement) {
     const sse = new EventSource(`${UrlJobProgress}/${jobId}`);
 
