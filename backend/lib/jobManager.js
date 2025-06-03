@@ -40,7 +40,7 @@ export const JobEvents = {
  * @typedef {Object} Job
  * @property {JobStatus} status - The current status of the job.
  * @property {number} progress - The progress percentage of the job (0-100).
- * @property {string|null} errorMessage - The error message if the job failed, otherwise null.
+ * @property {string|null} message - The error message if the job failed, otherwise null.
  * @property {EventEmitter} emitter - Event emitter for job events.
  * @property {AbortController} controller - Controller to manage job cancellation.
  * @property {Date} createdAt - The timestamp when the job was created.
@@ -50,7 +50,7 @@ export const JobEvents = {
  * @typedef {Object} JobProgress
  * @property {JobStatus} status - The current status of the job.
  * @property {number} progress - The progress percentage of the job (0-100).
- * @property [{string}] errorMessage - The error message if the job failed.
+ * @property [{string}] message - Any message.
  * @property [{Object}] data - Additional data related to the job, if any.
  */
 
@@ -79,7 +79,7 @@ export function createJob(task, ...args) {
     const job = {
         status: JobStatus.InProgress,
         progress: 0,
-        errorMessage: null,
+        message: null,
         emitter,
         controller,
         createdAt: Date.now()
@@ -106,8 +106,8 @@ export function createJob(task, ...args) {
     const emitFailure = (error) => {
         if (job.status !== JobStatus.InProgress) return;
         job.status = JobStatus.Failed;
-        job.errorMessage = error instanceof Error ? error.message : String(error);
-        emitter.emit(JobEvents.Error, { status: job.status, progress: job.progress, errorMessage: job.errorMessage });
+        job.message = error instanceof Error ? error.message : String(error);
+        emitter.emit(JobEvents.Error, { status: job.status, progress: job.progress, message: job.message });
 
         scheduleCleanup(id, JobCleanupDelayInMs);
     };
@@ -148,7 +148,7 @@ export function cancelJob(jobId) {
 
     job.controller.abort();
     job.status = JobStatus.Cancelled;
-    job.errorMessage = 'Job was cancelled.';
+    job.message = 'Job was cancelled.';
     job.emitter.emit(JobEvents.Cancel, { status: job.status, progress: job.progress, message: job.message });
     
     scheduleCleanup(jobId, JobCleanupDelayInMs);
