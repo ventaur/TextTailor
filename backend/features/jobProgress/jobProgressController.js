@@ -44,7 +44,7 @@ export async function jobProgress(req, res) {
     }
 
     // Immediately send the current state of the job's progress.
-    sendProgress(job.progress);
+    sendProgress({ status: job.status, progress: job.progress });
 
     // Subscribe to the job's updates.
     job.emitter.on(JobEvents.Progress, sendProgress);
