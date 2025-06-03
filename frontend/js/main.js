@@ -22,6 +22,11 @@ const JobEvents = {
     Cleanup: 'cleanup'
 }
 
+const JobTypes = {
+    Post: 'post',
+    Page: 'page'
+};
+
 const MethodPost = 'POST';
 const StringTrue = 'true';
 const StringFalse = 'false';
@@ -31,14 +36,44 @@ const actionContainer = document.querySelector('.action-container');
 const form = document.getElementById('formTextTailor');
 const confirmReplaceAll = document.getElementById('confirmReplaceAll');
 const cancelBtn = document.getElementById('btnCancel');
-const progressSection = document.getElementById('progressSection');
 const backdrop = document.querySelector('.backdrop');
 
+const progressSection = document.getElementById('progressSection');
+const progressHeading = document.getElementById('progressHeading');
+const textToReplaceStatus = document.getElementById('textToReplaceStatus');
+const replacementTextStatus = document.getElementById('replacementTextStatus');
+const postProgress = document.getElementById('postProgress');
+const postStatus = document.getElementById('postStatus');
+const pageProgress = document.getElementById('pageProgress');
+const pageStatus = document.getElementById('pageStatus');
+const summary = document.getElementById('summary');
+
+
 let completedJobCount = 0;
+let summaryStats = {};
+
+
 async function start() {
-    const res = await fetch('/replace-text', { method: 'POST' });
+    const data = getFormData();
+    const res = await fetch(UrlReplaceText, {
+        method: MethodPost, 
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    });
     
     const { postJobId, pageJobId } = await res.json();
+    completedJobCount = 0;
+    summaryStats = {};
+
+    wireUpCancelButton(postJobId, pageJobId);
+
+    trackJob(postJobId, JobTypes.Post, postProgress, postStatus);
+    trackJob(pageJobId, JobTypes.Page, pageProgress, pageStatus);
+}
+
+function trackJob(jobId, jobType, progressElement, statusElement) {
     const sse = new EventSource(`${UrlJobProgress}/${jobId}`);
 
     const handleProgress = (event) => {
@@ -87,7 +122,31 @@ async function start() {
 
     window.addEventListener(EventBeforeUnload, handleUnload);
 }
+
+
+function getFormData() {
+    const formData = new FormData(form);
+    const data = {};
+
+    for (const pair of formData) {
+        data[pair[0]] = pair[1];
+    }
+
+    return data;
+}
+
 function showProgressSection() {
+    textToReplaceStatus.textContent = form.textToReplace.value;
+    replacementTextStatus.textContent = form.replacementText.value;
+
+    // Reset the progress and status elements to their initial state.
+    postProgress.value = 0;
+    postStatus.textContent = 'Progress: 0%';
+    pageProgress.value = 0;
+    pageStatus.textContent = 'Progress: 0%';
+
+    summary.classList.add(ClassHidden);
+
     actionContainer.classList.add(ClassShowProgress);
     progressSection.setAttribute(AttrAriaHidden, StringFalse);
     backdrop.setAttribute(AttrAriaHidden, StringFalse);
@@ -115,6 +174,55 @@ function hideProgressSection() {
     );
 }
 
+function showSummary() {
+    let summaryHtml = `
+        <h3>Summary</h3>
+        <ul>
+            <li>${summaryStats.posts?.articleCount || 0} posts and ${summaryStats.pages?.articleCount || 0} pages were processed.</li>
+            <li>
+                ${summaryStats.posts?.matchCount || 0} post matches were found and 
+                ${summaryStats.posts?.replacedCount || 0} replacements were made.
+            </li>
+            <li>
+                ${summaryStats.pages?.matchCount || 0} page matches were found and 
+                ${summaryStats.pages?.replacedCount || 0} replacements were made.
+            </li>
+        </ul>
+    `;
+
+    if (summaryStats.posts?.replacedCount < summaryStats.posts?.matchCount ||
+        summaryStats.pages?.replacedCount < summaryStats.pages?.matchCount) {
+        summaryHtml += `
+            <div class="alert alert-warning">
+                <strong>Warning:</strong> Some matches in posts could not be replaced. 
+                This typically happens when some text to replace has different casing or mixed formatting (e.g., bold, italic) 
+                or is partially included in a link.
+            </div>
+        `;
+    }
+
+    summary.innerHTML = summaryHtml;
+    summary.classList.remove(ClassHidden);
+}
+
+function onJobComplete(jobType, stats) {
+    if (jobType === JobTypes.Post) {
+        summaryStats.posts = stats;
+    } else if (jobType === JobTypes.Page) {
+        summaryStats.pages = stats;
+    }
+
+    completedJobCount++;
+    
+    // If both jobs are complete, show a summary and change the cancel button's text.
+    if (completedJobCount === 2) {
+        showSummary();
+        progressHeading.textContent = 'All Jobs Completed';
+        cancelBtn.textContent = 'Close';
+    }
+}
+
+
 form.addEventListener(EventSubmit, (e) => {
     e.preventDefault();
 
@@ -125,4 +233,26 @@ form.addEventListener(EventSubmit, (e) => {
     }
 
     // Call the start function to initiate the job.
+    start()
+        .then(() => {
             showProgressSection();
+        })
+        .catch((error) => {
+            console.error('Error starting the job:', error);
+            alert('An error occurred while starting the job. Please try again later.');
+        });
+});
+
+function wireUpCancelButton(...jobIds) {    
+    cancelBtn.addEventListener(
+        EventClick, 
+        async function handleClick() {
+            const responses = await Promise.all(jobIds.map(id => fetch(`${UrlCancelJob}/${id}`, { method: MethodPost })));
+            // TODO: Handle the responses to check if the cancellation was successful.
+
+            hideProgressSection();
+
+            cancelBtn.removeEventListener(EventClick, handleClick);
+        }
+    );
+}
