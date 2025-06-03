@@ -10,6 +10,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 
 
+// Endpoints
 app.get('/', (req, res) => {
     res.send('Welcome to the Text Tailor API! Nothing to see here.');
 });
@@ -23,6 +24,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 
+// Start the server.
 const server = app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
