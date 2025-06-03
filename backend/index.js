@@ -1,6 +1,7 @@
 import express from 'express';
 import replaceTextRoute from './features/replaceText/replaceTextRoute.js';
 import jobProgressRoute from './features/jobProgress/jobProgressRoute.js';
+import jobCancelRoute from './features/jobCancel/jobCancelRoute.js';
 import setupDataForTestRoute from './features/setupDataForTest/setupDataForTestRoute.js';
 
 
@@ -17,6 +18,7 @@ app.get('/', (req, res) => {
 
 app.use('/replace-text', replaceTextRoute);
 app.use('/job-progress', jobProgressRoute);
+app.use('/cancel-job', jobCancelRoute);
 
 if (process.env.NODE_ENV === 'development') {
     app.use('/setup-data-for-test', setupDataForTestRoute);
