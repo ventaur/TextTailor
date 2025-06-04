@@ -4,12 +4,19 @@ import { fileURLToPath } from "url";
 import chokidar from 'chokidar';
 import dotenvFlow from 'dotenv-flow';
 import debounce from 'lodash.debounce';
+import minimist from 'minimist';
 
 
 // Emulate __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+
+const args = minimist(process.argv.slice(2), {
+    string: ['apiUrl'],
+    boolean: ['watch'],
+    alias: { api: 'a', watch: 'w' }
+});
 
 const env = process.env.NODE_ENV || "development";
 dotenvFlow.config({ node_env: env });
@@ -18,7 +25,8 @@ const publicDir = path.join(__dirname, "public");
 const distDir = path.join(__dirname, "dist");
 
 // CLI arg takes priority over env.
-const apiUrl = process.argv[2] || process.env.API_URL;
+const apiUrl = args.apiUrl || process.env.API_URL;
+const isWatching = !!args.watch;
 
 
 // Validate the required config.

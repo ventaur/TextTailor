@@ -10,6 +10,7 @@
     "concurrently": "^9.1.2",
     "dotenv-flow": "^4.1.0",
     "live-server": "^1.2.2",
-    "lodash.debounce": "^4.0.8"
+    "lodash.debounce": "^4.0.8",
+    "minimist": "^1.2.8"
   }
 }
