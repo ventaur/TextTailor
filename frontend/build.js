@@ -77,6 +77,14 @@ function copyRecursive(src, dest) {
     }
 }
 
+function outputBanner() {
+    console.log('\n🚀 TextTailor Build Started');
+    console.log(`Environment: ${env}`);
+    console.log(`API URL:     ${apiUrl}`);
+    console.log(`Watch Mode:  ${isWatching ? 'Enabled' : 'Disabled'}\n`);
+}
+
+outputBanner();
 build();
 
 
