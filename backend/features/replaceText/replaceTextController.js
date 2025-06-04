@@ -4,6 +4,7 @@ import { countMatches } from '../../lib/matchers.js';
 import { createReplaceWithTally, replaceGhostLexicalText } from '../../lib/replacers.js';
 import { createJob } from '../../lib/jobManager.js';
 import escapeGhostFilterString from '../../lib/escape.js';
+import updateTotals from '../../lib/updateTotals.js';
 
 import logger from '../../lib/logger.js';
 
@@ -87,12 +88,7 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
         }));
 
         // Update the overall replacement stats for this batch of articles.
-        statsList.reduce((acc, stats) => {
-            acc.matchCount += stats.matchCount;
-            acc.replacedCount += stats.replacedCount;
-            acc.articleCount += stats.articleCount;
-            return acc;
-        }, totalStats);
+        updateTotals(totalStats, statsList);
 
         // Emit progress updates.
         const progress = Math.min(100, Math.floor((page * BrowseLimit / totalArticles) * 100));
