@@ -9,7 +9,18 @@ import yieldToEventLoop from '../../lib/yieldToEventLoop.js';
 import logger from '../../lib/logger.js';
 
 
-const BrowseLimit = 30;
+const BrowseLimit = 25;
+
+
+/**
+ * Enum for article types.
+ * @readonly
+ * @enum {string}
+ */
+const ArticleType = {
+    Post: 'post',
+    Page: 'page'
+};
 
 
 /**
@@ -18,12 +29,13 @@ const BrowseLimit = 30;
  * and updates the article content with the replacement text if found.
  *
  * @param {Object} apiForArticles - The Ghost Admin API resource instance for posts or pages.
+ * @param {ArticleType} articleType - The type of articles to process (either 'posts' or 'pages').
  * @param {string} textToReplace - The text to be replaced in the articles.
  * @param {string} replacementText - The text to replace with in the articles.
  * @param {import('../../lib/jobManager.js').JobControl} jobControl - Control object for job management, including progress and completion callbacks.
  */
-async function replaceTextInArticles(apiForArticles, textToReplace, replacementText, jobControl) {
-    let totalStats = { matchCount: 0, replacedCount: 0, articleCount: 0 }
+async function replaceTextInArticles(apiForArticles, articleType, textToReplace, replacementText, jobControl) {
+    let totalStats = { matchCount: 0, replacedCount: 0, articleCount: 0, errorCount: 0 };
 
     let page = 1;
     let hasMore = false;
@@ -35,11 +47,8 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
             return;
         }
 
-        // Retrieve matching articles (paginated).
-        // NOTE: The filter uses `plaintext` to search for the text in the article content.
-        const filterText = escapeGhostFilterString(textToReplace);
+        // Retrieve all articles (paginated).
         const articles = await apiForArticles.browse({
-            filter: `title:~'${filterText}',custom_excerpt:~'${filterText}',plaintext:~'${filterText}'`,
             order: 'created_at ASC',
             formats: ['lexical', 'plaintext'],
             limit: BrowseLimit,
@@ -48,12 +57,14 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
 
         const pagination = articles?.meta?.pagination || {};
         const totalArticles = pagination?.total || 0;
-        logger.info(`Processing page ${page} of ${pagination.pages} articles. Total articles found: ${totalArticles}`);
+        logger.info(`[${articleType}] Processing page ${page} of ${pagination.pages} articles. Total articles found: ${totalArticles}`);
 
         // Iterate through each article and replace the text.
         // Promise.allSettled is used to perform the replacements/updates in "parallel", 
         // but each batch must finish before moving on to avoid overloading the Ghost API.
-        const statsList = await Promise.allSettled(articles.map(async (article) => {
+
+        const stats = [];
+        for (const article of articles) {
             // Count how many times the text to replace exists in the article's plaintext vs html or lexical.
             // We'll use this to determine if there are matches that couldn't be replaced in the lexical content.
             let matchCount = countMatches(article.plaintext, textToReplace);
