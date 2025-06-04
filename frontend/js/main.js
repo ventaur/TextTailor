@@ -199,6 +199,10 @@ function showSummary() {
                 ${summaryStats.pages?.matchCount || 0} page matches were found and 
                 ${summaryStats.pages?.replacedCount || 0} replacements were made.
             </li>
+            <li>
+                ${summaryStats.posts?.errorCount || 0} posts and
+                ${summaryStats.pages?.errorCount || 0} pages encountered errors during processing.
+            </li>
         </ul>
     `;
 
