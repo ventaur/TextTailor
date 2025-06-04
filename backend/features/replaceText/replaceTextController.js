@@ -4,7 +4,6 @@ import { countMatches } from '../../lib/matchers.js';
 import { createReplaceWithTally, replaceGhostLexicalText } from '../../lib/replacers.js';
 import { createJob } from '../../lib/jobManager.js';
 import updateTotals from '../../lib/updateTotals.js';
-import yieldToEventLoop from '../../lib/yieldToEventLoop.js';
 
 import logger from '../../lib/logger.js';
 
@@ -60,9 +59,8 @@ async function replaceTextInArticles(apiForArticles, articleType, textToReplace,
         logger.info(`[${articleType}] Processing page ${page} of ${pagination.pages} articles. Total articles found: ${totalArticles}`);
 
         // Iterate through each article and replace the text.
-        // Promise.allSettled is used to perform the replacements/updates in "parallel", 
-        // but each batch must finish before moving on to avoid overloading the Ghost API.
-
+        // NOTE: We can't use Promise.all or Promise.allSettled here because we need to handle each article sequentially
+        // to avoid hitting concurrency issues with Ghost DB.
         const stats = [];
         for (const article of articles) {
             // Count how many times the text to replace exists in the article's plaintext vs html or lexical.
@@ -71,8 +69,9 @@ async function replaceTextInArticles(apiForArticles, articleType, textToReplace,
             matchCount += countMatches(article.title, textToReplace);
             matchCount += countMatches(article.custom_excerpt, textToReplace);
             if (matchCount === 0) {
-                logger.warn(`No matches found in article: ${article.title}`);
-                return { matchCount, replacedCount: 0, articleCount: 0 };
+                logger.warn(`[${articleType}] No matches found in article: ${article.title}`);
+                stats.push({ matchCount, replacedCount: 0, articleCount: 0, errorCount: 0 });
+                continue;
             }
             
             // Perform the replacements.
@@ -84,39 +83,42 @@ async function replaceTextInArticles(apiForArticles, articleType, textToReplace,
             
             let replacedCount = replacerWithTally.getCount();
             let articleCount = 0;
+            let errorCount = 0;
             
             // Only update the article if text was replaced.
             if (replacedCount > 0) {
-                article.lexical = JSON.stringify(lexicalTree);
-                await apiForArticles.edit(article);
-                articleCount++;
+                try {
+                    article.lexical = JSON.stringify(lexicalTree);
+                    await apiForArticles.edit(article);
+                    articleCount++;
+                } catch (error) {
+                    errorCount++;
+                    logger.error(`[${articleType}] Error updating article: ${article.title} - ${error.message}`);
+                }
 
-                logger.info(`Replaced ${replacedCount} text(s) in article: ${article.title}`);
+                logger.info(`[${articleType}] Replaced ${replacedCount} text(s) in article: ${article.title}`);
             } else {
-                logger.warn(`Matches found, but no text replaced in article: ${article.title}`);
+                logger.warn(`[${articleType}] Matches found, but no text replaced in article: ${article.title}`);
             }
 
-            return { matchCount, replacedCount, articleCount };
-        }));
+            stats.push({ matchCount, replacedCount, articleCount, errorCount });
+        };
 
         // Update the overall replacement stats for this batch of articles.
-        updateTotals(totalStats, statsList.map(result => result.value));
+        updateTotals(totalStats, stats);
 
         // Emit progress updates.
         const progress = Math.min(100, Math.floor((page * BrowseLimit / totalArticles) * 100));
         jobControl.emitProgress(progress);
 
-        // Let the event loop process other tasks before continuing.
-        await yieldToEventLoop();
-
         page++;
         hasMore = pagination?.next !== null;
-        logger.info(`Next page: ${pagination?.next}`);
+        logger.info(`[${articleType}] Next page: ${pagination?.next}`);
     } while (hasMore);
 
     // Emit completion of the job.
     jobControl.emitComplete(totalStats);
-    logger.info('Finished processing articles.');
+    logger.info('[${articleType}] Finished processing articles.');
 }
 
 /**
@@ -153,8 +155,8 @@ export async function replaceText (req, res) {
         });
 
         // Perform the text replacement in both posts and pages as jobs.
-        const postJobId = createJob(replaceTextInArticles, api.posts, textToReplace, replacementText);
-        const pageJobId = createJob(replaceTextInArticles, api.pages, textToReplace, replacementText);
+        const postJobId = createJob(replaceTextInArticles, api.posts, ArticleType.Post, textToReplace, replacementText);
+        const pageJobId = createJob(replaceTextInArticles, api.pages, ArticleType.Page, textToReplace, replacementText);
 
         const responseData = {
             message: 'Text replacement jobs have been initiated successfully.',
