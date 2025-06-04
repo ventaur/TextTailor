@@ -118,7 +118,7 @@ async function replaceTextInArticles(apiForArticles, articleType, textToReplace,
 
     // Emit completion of the job.
     jobControl.emitComplete(totalStats);
-    logger.info('[${articleType}] Finished processing articles.');
+    logger.info(`[${articleType}] Finished processing articles.`);
 }
 
 /**
