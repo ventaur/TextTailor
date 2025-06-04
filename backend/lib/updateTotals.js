@@ -6,6 +6,7 @@
  */
 export default function updateTotals(totals, items) {
     for (const item of items) {
+        if (!item) continue;
         for (const key in item) {
             totals[key] = (totals[key] || 0) + item[key];
         }

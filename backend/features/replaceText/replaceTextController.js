@@ -90,7 +90,7 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
         }));
 
         // Update the overall replacement stats for this batch of articles.
-        updateTotals(totalStats, statsList);
+        updateTotals(totalStats, statsList.map(result => result.value));
 
         // Emit progress updates.
         const progress = Math.min(100, Math.floor((page * BrowseLimit / totalArticles) * 100));
