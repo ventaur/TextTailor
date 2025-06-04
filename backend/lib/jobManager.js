@@ -1,6 +1,8 @@
 import { EventEmitter } from 'events';
 import { v4 as uuidv4 } from 'uuid';
 
+import logger from './logger.js';
+
 
 /**
  * In-memory storage for jobs.
@@ -175,18 +177,18 @@ function scheduleCleanup(jobId, delayInMs) {
     setTimeout(() => {
         const job = jobs[jobId];
         if (!job) {
-            console.warn(`Job ${jobId} not found for cleanup.`);
+            logger.warn(`Job ${jobId} not found for cleanup.`);
             return;
         }
 
-        console.debug('Job IDs in memory before cleanup:', Object.keys(jobs));
+        logger.debug('Job IDs in memory before cleanup:', Object.keys(jobs));
         
         // Emit a cleanup event if needed, for any listeners to handle.
         job.emitter.emit(JobEvents.Cleanup);
 
         delete jobs[jobId];
-        console.log(`Cleaned up job ${jobId}.`);
+        logger.info(`Cleaned up job ${jobId}.`);
 
-        console.debug('Job IDs in memory after cleanup:', Object.keys(jobs));
+        logger.debug('Job IDs in memory after cleanup:', Object.keys(jobs));
     }, delayInMs);
 }

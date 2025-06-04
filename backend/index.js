@@ -6,6 +6,9 @@ import jobProgressRoute from './features/jobProgress/jobProgressRoute.js';
 import jobCancelRoute from './features/jobCancel/jobCancelRoute.js';
 import setupDataForTestRoute from './features/setupDataForTest/setupDataForTestRoute.js';
 
+import logger from './lib/logger.js';
+
+
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -29,21 +32,21 @@ app.use('/cancel-job', jobCancelRoute);
 
 if (process.env.NODE_ENV === 'development') {
     app.use('/setup-data-for-test', setupDataForTestRoute);
-    console.log('Running in development mode. Setup data route is enabled.');
+    logger.info('Running in development mode. Setup data route is enabled.');
 }
 
 
 // Start the server.
 const server = app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+    logger.info(`Server is running on port ${port}`);
 });
 
 
 // Handle sginals for graceful shutdown.
 function shutdown(signal) {
-    console.log(`\nReceived ${signal}. Closing server gracefully...`);
+    logger.info(`\nReceived ${signal}. Closing server gracefully...`);
     server.close(() => {
-        console.log('HTTP server closed.');
+        logger.info('HTTP server closed.');
         // TODO: Close any other resources like database connections, etc.
 
         process.exit(0);
@@ -51,7 +54,7 @@ function shutdown(signal) {
 
     // Force shutdown if it takes too long
     setTimeout(() => {
-        console.error('Forced shutdown.');
+        logger.error('Forced shutdown.');
         process.exit(1);
     }, 10000); // 10 seconds timeout
 }
@@ -59,6 +62,6 @@ function shutdown(signal) {
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception:', err);
+    logger.error('Uncaught Exception:', err);
     shutdown('SIGTERM');
 });

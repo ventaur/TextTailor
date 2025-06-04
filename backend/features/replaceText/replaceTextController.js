@@ -5,6 +5,8 @@ import { createReplaceWithTally, replaceGhostLexicalText } from '../../lib/repla
 import { createJob } from '../../lib/jobManager.js';
 import escapeGhostFilterString from '../../lib/escape.js';
 
+import logger from '../../lib/logger.js';
+
 
 const BrowseLimit = 30;
 
@@ -28,7 +30,7 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
     do {
         // Bail out if the job is cancelled.
         if (jobControl.abortSignal?.aborted) {
-            console.log('Job cancelled by user.');
+            logger.warn('Job cancelled by user.');
             return;
         }
 
@@ -43,7 +45,9 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
             page
         });
 
-        const totalArticles = articles?.meta?.pagination?.total || 0;
+        const pagination = articles?.meta?.pagination || {};
+        const totalArticles = pagination?.total || 0;
+        logger.info(`Processing page ${page} of ${pagination.pages} articles. Total articles found: ${totalArticles}`);
 
         // Iterate through each article and replace the text.
         // NOTE: Promise.all is used to perform the replacements/updates in "parallel".
@@ -54,7 +58,7 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
             matchCount += countMatches(article.title, textToReplace);
             matchCount += countMatches(article.custom_excerpt, textToReplace);
             if (matchCount === 0) {
-                console.log(`No matches found in article: ${article.title}`);
+                logger.warn(`No matches found in article: ${article.title}`);
                 return { matchCount, replacedCount: 0, articleCount: 0 };
             }
             
@@ -74,9 +78,9 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
                 await apiForArticles.edit(article);
                 articleCount++;
 
-                console.log(`Replaced ${replacedCount} text(s) in article: ${article.title}`);
+                logger.info(`Replaced ${replacedCount} text(s) in article: ${article.title}`);
             } else {
-                console.log(`Matches found, but no text replaced in article: ${article.title}`);
+                logger.warn(`Matches found, but no text replaced in article: ${article.title}`);
             }
 
             return { matchCount, replacedCount, articleCount };
@@ -95,11 +99,13 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
         jobControl.emitProgress(progress);
 
         page++;
-        hasMore = articles?.meta?.pagination?.next !== null;
+        hasMore = pagination?.next !== null;
+        logger.info(`Next page: ${pagination?.next}`);
     } while (hasMore);
 
     // Emit completion of the job.
     jobControl.emitComplete(totalStats);
+    logger.info('Finished processing articles.');
 }
 
 /**
@@ -110,6 +116,8 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
  * @param {import('express').Response} res - The response object to send back the result.
  */
 export async function replaceText (req, res) {
+    logger.info('Received request to replace text in articles.');
+
     // Get request parameters and valiate them.
     const { adminKey, apiUrl, textToReplace, replacementText } = req.body;
 
@@ -147,7 +155,7 @@ export async function replaceText (req, res) {
     } catch (error) {
         // Any errors during the process will be caught here.
         const errorMessage = `Error creating text replacement jobs: ${error.message}`
-        console.error(errorMessage);
+        logger.error(errorMessage);
         return res.status(500).json({ error: errorMessage });
     }
 };

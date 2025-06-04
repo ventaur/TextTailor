@@ -1,5 +1,7 @@
 import GhostAdminAPI from '@tryghost/admin-api'
 
+import logger from '../../lib/logger.js';
+
 
 async function addParagraphsToArticles(api, paragraphChoices) {
     // Retrieve all posts from the Ghost API.
@@ -29,14 +31,14 @@ async function addParagraphsToArticles(api, paragraphChoices) {
             post.lexical = JSON.stringify(lexicalTree);
             await api.posts.edit(post);
 
-            console.log(`Updated post #${count}: "${post.title}" with ${randomParagraphCount} paragraphs.`);
+            logger.info(`Updated post #${count}: "${post.title}" with ${randomParagraphCount} paragraphs.`);
         };
 
         page++;
         hasMore = posts?.meta?.pagination?.next !== null;
     } while (hasMore);
 
-    console.log(`Total posts updated: ${count}`);
+    logger.info(`Total posts updated: ${count}`);
 }
 
 export async function setupDataForTest (req, res) {
@@ -63,7 +65,7 @@ export async function setupDataForTest (req, res) {
     } catch (error) {
         // Any errors during the process will be caught here.
         const errorMessage = `Error setting up data for test: ${error.message}`
-        console.error(errorMessage);
+        logger.error(errorMessage);
         console.trace();
         return res.status(500).json({ error: errorMessage });
     }

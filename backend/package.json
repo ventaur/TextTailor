@@ -9,6 +9,8 @@
     "@tryghost/admin-api": "^1.13.16",
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
   }
 }
