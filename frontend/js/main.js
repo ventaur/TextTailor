@@ -91,7 +91,7 @@ function trackJob(jobId, jobType, progressElement, statusElement) {
     const handleProgress = (event) => {
         const { progress } = JSON.parse(event.data);
         progressElement.value = progress;
-        statusElement.textContent = `Progress: ${progress}%`;
+        statusElement.textContent = `⌛ Progress: ${progress}%`;
     };
 
     const handleComplete = (event) => {
