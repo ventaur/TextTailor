@@ -3,7 +3,6 @@ import GhostAdminAPI from '@tryghost/admin-api'
 import { countMatches } from '../../lib/matchers.js';
 import { createReplaceWithTally, replaceGhostLexicalText } from '../../lib/replacers.js';
 import { createJob } from '../../lib/jobManager.js';
-import escapeGhostFilterString from '../../lib/escape.js';
 import updateTotals from '../../lib/updateTotals.js';
 import yieldToEventLoop from '../../lib/yieldToEventLoop.js';
 
