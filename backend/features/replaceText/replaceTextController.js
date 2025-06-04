@@ -51,8 +51,9 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
         logger.info(`Processing page ${page} of ${pagination.pages} articles. Total articles found: ${totalArticles}`);
 
         // Iterate through each article and replace the text.
-        // NOTE: Promise.all is used to perform the replacements/updates in "parallel".
-        const statsList = await Promise.all(articles.map(async (article) => {
+        // Promise.allSettled is used to perform the replacements/updates in "parallel", 
+        // but each batch must finish before moving on to avoid overloading the Ghost API.
+        const statsList = await Promise.allSettled(articles.map(async (article) => {
             // Count how many times the text to replace exists in the article's plaintext vs html or lexical.
             // We'll use this to determine if there are matches that couldn't be replaced in the lexical content.
             let matchCount = countMatches(article.plaintext, textToReplace);
