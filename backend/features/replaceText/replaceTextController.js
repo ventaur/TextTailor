@@ -5,6 +5,7 @@ import { createReplaceWithTally, replaceGhostLexicalText } from '../../lib/repla
 import { createJob } from '../../lib/jobManager.js';
 import escapeGhostFilterString from '../../lib/escape.js';
 import updateTotals from '../../lib/updateTotals.js';
+import yieldToEventLoop from '../../lib/yieldToEventLoop.js';
 
 import logger from '../../lib/logger.js';
 
@@ -94,6 +95,9 @@ async function replaceTextInArticles(apiForArticles, textToReplace, replacementT
         // Emit progress updates.
         const progress = Math.min(100, Math.floor((page * BrowseLimit / totalArticles) * 100));
         jobControl.emitProgress(progress);
+
+        // Let the event loop process other tasks before continuing.
+        await yieldToEventLoop();
 
         page++;
         hasMore = pagination?.next !== null;
