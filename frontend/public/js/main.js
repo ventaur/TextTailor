@@ -1,4 +1,4 @@
-const ApiBaseUrl = 'http://localhost:3000';
+const ApiBaseUrl = window.__CONFIG__.apiUrl;
 
 const UrlReplaceText = `${ApiBaseUrl}/replace-text`;
 const UrlJobProgress = `${ApiBaseUrl}/job-progress`;

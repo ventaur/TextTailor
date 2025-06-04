@@ -1,9 +1,15 @@
 {
   "name": "ghost-texttailor-frontend",
+  "type": "module",
   "scripts": {
-    "dev": "live-server --port=3001 "
+    "build": "node build.js",
+    "dev": "concurrently --kill-others \"node build.js --watch\" \"live-server dist --port=3001 --quiet\""
   },
   "devDependencies": {
-    "live-server": "^1.2.2"
+    "chokidar": "^4.0.3",
+    "concurrently": "^9.1.2",
+    "dotenv-flow": "^4.1.0",
+    "live-server": "^1.2.2",
+    "lodash.debounce": "^4.0.8"
   }
 }
