@@ -3,7 +3,10 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "node --watch index.js"
+    "dev": "node --watch index.js",
+    "test": "mocha",
+    "test:watch": "mocha --watch",
+    "coverage": "nyc mocha"
   },
   "dependencies": {
     "@tryghost/admin-api": "^1.13.16",
@@ -12,5 +15,12 @@
     "uuid": "^11.1.0",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0"
+  },
+  "devDependencies": {
+    "chai": "^5.2.0",
+    "mocha": "^11.5.0",
+    "nock": "^14.0.5",
+    "nyc": "^17.1.0",
+    "sinon": "^20.0.0"
   }
 }
