@@ -1,0 +1,6 @@
+services:
+  backend:
+    restart: always
+
+  caddy:
+    restart: on-failure
