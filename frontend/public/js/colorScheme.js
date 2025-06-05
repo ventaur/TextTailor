@@ -44,7 +44,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return scheme;
     }
 
-    function toggleScheme() {
+    function toggleScheme(e) {
+        e.preventDefault();
+        
         const currentScheme = getSchemePreference();
         const newScheme = determineNextScheme(currentScheme);
         localStorage.setItem(schemeKey, newScheme);
