@@ -5,7 +5,7 @@
     "start": "node index.js",
     "dev": "node --watch index.js",
     "test": "mocha",
-    "test:watch": "mocha --watch",
+    "test:watch": "nodemon --watch features --watch lib --watch test --exec 'yarn test'",
     "coverage": "nyc mocha"
   },
   "dependencies": {
@@ -20,6 +20,7 @@
     "chai": "^5.2.0",
     "mocha": "^11.5.0",
     "nock": "^14.0.5",
+    "nodemon": "^3.1.10",
     "nyc": "^17.1.0",
     "sinon": "^20.0.0"
   }
