@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "Backend API",
+			"path": "backend"
+		},
+		{
+			"name": "Frontend",
+			"path": "frontend"
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/.yarn": true,
+			"**/node_modules": true
+		}
+	}
+}
