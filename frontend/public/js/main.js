@@ -190,17 +190,25 @@ function showSummary() {
     let summaryHtml = `
         <h3>Summary</h3>
         <ul>
-            <li>${summaryStats.posts?.articleCount || 0} posts and ${summaryStats.pages?.articleCount || 0} pages were processed.</li>
+            <li>
+                ${summaryStats.posts?.articleCount || 0} posts were processed.
+            </li>
             <li>
                 ${summaryStats.posts?.matchCount || 0} post matches were found and 
                 ${summaryStats.posts?.replacedCount || 0} replacements were made.
+            </li>
+            <li>
+                ${summaryStats.posts?.errorCount || 0} posts encountered errors during processing.
+            </li>
+            
+            <li>
+                ${summaryStats.pages?.articleCount || 0} pages were processed.
             </li>
             <li>
                 ${summaryStats.pages?.matchCount || 0} page matches were found and 
                 ${summaryStats.pages?.replacedCount || 0} replacements were made.
             </li>
             <li>
-                ${summaryStats.posts?.errorCount || 0} posts and
                 ${summaryStats.pages?.errorCount || 0} pages encountered errors during processing.
             </li>
         </ul>
