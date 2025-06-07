@@ -1,4 +1,4 @@
-import { mutateDeepByKey } from './mutateDeep.js';
+import { mutateDeepByKey } from './deepSearch.js';
 
 
 /* Utility to replace text in a string and keep track of how many times the replacement was made.

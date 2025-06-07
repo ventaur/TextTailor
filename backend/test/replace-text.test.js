@@ -3,6 +3,8 @@ import nock from 'nock';
 
 import { replaceText } from '../features/replaceText/replaceTextController.js';
 import { JobEvents, JobStatus, getJob } from '../lib/jobManager.js';
+import { countMatches } from '../lib/matchers.js';
+import { findDeepByKey } from '../lib/deepSearch.js';
 
 
 const PathBrowsePosts = '/ghost/api/admin/posts/';
@@ -95,14 +97,22 @@ describe('replace-text', function () {
             });
 
         // Mock edit endpoints to capture payloads.
+        let editedPosts = [];
         const postEdit = nock(apiUrl)
             .put(PathEditPosts)
             .twice()
-            .reply(200, (uri, reqBody) => reqBody);
+            .reply(200, (uri, reqBody) => {
+                editedPosts.push(reqBody.posts[0]);
+                return reqBody
+            });
 
+        let editedPage;
         const pageEdit = nock(apiUrl)
             .put(PathEditPages)
-            .reply(200, (uri, reqBody) => reqBody);
+            .reply(200, (uri, reqBody) => {
+                editedPage = reqBody.pages[0];
+                return reqBody
+            });
 
         const { req, res, getStatus, getJson } = createMockReqRes({
             adminKey, apiUrl, textToReplace, replacementText
@@ -124,9 +134,18 @@ describe('replace-text', function () {
         await waitForJobToFinish(pageJob);
 
         // Check that edit was called for each article with a match.
-        // TODO: Verify the payload has the replacements.
         expect(postEdit.isDone()).to.be.true;
         expect(pageEdit.isDone()).to.be.true;
+        
+        
+        // Verify the payloads have the replacements.
+        expectMatchesInArticle(editedPosts[0], replacementText, 3);
+        expectNoMatchesInArticle(editedPosts[0], textToReplace);
+        expectMatchesInArticle(editedPosts[1], replacementText, 1);
+        expectNoMatchesInArticle(editedPosts[1], textToReplace);
+
+        expectMatchesInArticle(editedPage, replacementText, 3);
+        expectNoMatchesInArticle(editedPage, textToReplace);
     });    
 
     it('should not call edit for articles with no matches', async function() {
@@ -202,6 +221,27 @@ describe('replace-text', function () {
     });
 });
 
+
+function expectMatchesInArticle(article, textToMatch, expectedMatchCountOrEvaluator) {
+    let matchCount = 0;
+    matchCount += countMatches(article.title, textToMatch);
+    matchCount += countMatches(article.custom_excerpt, textToMatch);
+
+    const lexicalContent = JSON.parse(article.lexical);
+    const textValues = findDeepByKey(lexicalContent, 'text');
+    textValues.forEach(text => matchCount += countMatches(text, textToMatch));
+
+    if (typeof expectedMatchCountOrEvaluator === 'function') {
+        expect(expectedMatchCountOrEvaluator(matchCount)).to.be.true;
+        return;
+    }
+
+    expect(matchCount).to.equal(expectedMatchCountOrEvaluator);
+}
+
+function expectNoMatchesInArticle(article, textToNotMatch) {
+    expectMatchesInArticle(article, textToNotMatch, 0);
+}
 
 async function waitForJobToFinish(job) {
     // Maybe it's already done.
