@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import nock from 'nock';
 
 import { replaceText } from '../features/replaceText/replaceTextController.js';
+import { JobEvents, JobStatus, getJob } from '../lib/jobManager.js';
 
 
 const PathBrowsePosts = '/ghost/api/admin/posts/';
@@ -111,18 +112,22 @@ describe('replace-text', function () {
         await replaceText(req, res);
 
         // Check the response.
+        const json = getJson();
         expect(getStatus()).to.equal(200);
-        expect(getJson()).to.have.property('postJobId');
-        expect(getJson()).to.have.property('pageJobId');
+        expect(json).to.have.property('postJobId');
+        expect(json).to.have.property('pageJobId');
 
-        // Wait for jobs to finish (jobs run async, so wait a bit).
-        await new Promise(resolve => setTimeout(resolve, 200));
+        // Wait for jobs to finish.
+        const postJob = getJob(json.postJobId);
+        const pageJob = getJob(json.pageJobId);
+        await waitForJobToFinish(postJob);
+        await waitForJobToFinish(pageJob);
 
         // Check that edit was called for each article with a match.
         // TODO: Verify the payload has the replacements.
         expect(postEdit.isDone()).to.be.true;
         expect(pageEdit.isDone()).to.be.true;
-    });
+    });    
 
     it('should not call edit for articles with no matches', async function() {
         const postArticles = [
@@ -196,3 +201,26 @@ describe('replace-text', function () {
         
     });
 });
+
+
+async function waitForJobToFinish(job) {
+    // Maybe it's already done.
+    if (job.status !== JobStatus.InProgress) return;
+
+    return new Promise((resolve) => {
+        const onDone = () => {
+            cleanup();
+            resolve();
+        };
+
+        const cleanup = () => {
+            job.emitter.removeListener(JobEvents.Complete, onDone);
+            job.emitter.removeListener(JobEvents.Error, onDone);
+            job.emitter.removeListener(JobEvents.Cancel, onDone);
+        };
+
+        job.emitter.once(JobEvents.Complete, onDone);
+        job.emitter.once(JobEvents.Error, onDone);
+        job.emitter.once(JobEvents.Cancel, onDone);
+    });
+}
