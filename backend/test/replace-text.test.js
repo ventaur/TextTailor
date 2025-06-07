@@ -195,7 +195,7 @@ describe('replace-text', function () {
         expect(pageEdit.isDone()).to.be.false;
     });
 
-    xit('should handle GhostAdminAPI errors by emitting error event', async function() {
+    it('should handle GhostAdminAPI errors by emitting error event', async function() {
         nock(apiUrl)
             .get(PathBrowsePosts)
             .query(true)
@@ -216,8 +216,16 @@ describe('replace-text', function () {
         // Act.
         await replaceText(req, res);
 
-        // TODO: Test jobProgress for error event.
         
+        // Wait for jobs to finish.
+        const json = getJson();
+        const postJob = getJob(json.postJobId);
+        const pageJob = getJob(json.pageJobId);
+        await waitForJobToFinish(postJob);
+        await waitForJobToFinish(pageJob);
+
+        // Test jobs for error status.
+        expect(postJob.status).to.equal(JobStatus.Failed);
     });
 });
 
