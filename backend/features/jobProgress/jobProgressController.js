@@ -1,4 +1,4 @@
-import { getJob, JobEvents } from '../../lib/jobManager.js';
+import { getJob, JobEvents, JobStatus, JobEventForStatus } from '../../lib/jobManager.js';
 
 
 /**
@@ -28,33 +28,34 @@ export async function jobProgress(req, res) {
         res.write(`event: progress\ndata: ${JSON.stringify(jobProgress)}\n\n`);
     };
 
-    const sendComplete = (jobProgress) => {
-        res.write(`event: complete\ndata: ${JSON.stringify(jobProgress)}\n\n`);
-        res.end();
-    };
-
-    const sendError = (jobProgress) => {
-        res.write(`event: error\ndata: ${JSON.stringify(jobProgress)}\n\n`);
+    const sendDone = (jobProgress) => {
+        const eventName = JobEventForStatus[jobProgress.status];
+        res.write(`event: ${eventName}\ndata: ${JSON.stringify(jobProgress)}\n\n`);
         res.end();
     };
 
     const sendCleanup = () => {
         res.write(`event: cleanup\ndata: {}\n\n`);
         res.end();
-    }
+    };
 
-    // Immediately send the current state of the job's progress.
-    sendProgress({ status: job.status, progress: job.progress });
-
-    // Subscribe to the job's updates.
-    job.emitter.on(JobEvents.Progress, sendProgress);
-    job.emitter.once(JobEvents.Complete, sendComplete);
-    job.emitter.once(JobEvents.Error, sendError);
-    job.emitter.once(JobEvents.Cleanup, sendCleanup);
-
-    
     // Handle client disconnection or errors.
     req.on('close', () => {
         job.emitter.removeListener(JobEvents.Progress, sendProgress);
     });
+
+    // Immediately send the current state of the job's progress and other pertinent statuses.
+    const progress = { status: job.status, progress: job.progress, message: job.message, stats: job.stats }
+    sendProgress({ status: job.status, progress: job.progress });
+    if (job.status !== JobStatus.InProgress) {
+        sendDone(progress);
+        return;
+    }
+
+    // Subscribe to the job's updates.
+    job.emitter.on(JobEvents.Progress, sendProgress);
+    job.emitter.once(JobEvents.Complete, sendDone);
+    job.emitter.once(JobEvents.Error, sendDone);
+    job.emitter.once(JobEvents.Cancel, sendDone);
+    job.emitter.once(JobEvents.Cleanup, sendCleanup);
 }

@@ -35,13 +35,20 @@ export const JobEvents = {
     Error: 'error',
     Cancel: 'cancel',
     Cleanup: 'cleanup'
-}
+};
+
+export const JobEventForStatus = {};
+JobEventForStatus[`${JobStatus.InProgress}`] = JobEvents.Progress;
+JobEventForStatus[`${JobStatus.Complete}`] = JobEvents.Complete;
+JobEventForStatus[`${JobStatus.Cancelled}`] = JobEvents.Cancel;
+JobEventForStatus[`${JobStatus.Failed}`] = JobEvents.Error;
 
 
 /**
  * @typedef {Object} Job
  * @property {JobStatus} status - The current status of the job.
  * @property {number} progress - The progress percentage of the job (0-100).
+ * @property {Object} stats - The stats of the completed job.
  * @property {string|null} message - The error message if the job failed, otherwise null.
  * @property {EventEmitter} emitter - Event emitter for job events.
  * @property {AbortController} controller - Controller to manage job cancellation.
@@ -81,6 +88,7 @@ export function createJob(task, ...args) {
     const job = {
         status: JobStatus.InProgress,
         progress: 0,
+        stats: null,
         message: null,
         emitter,
         controller,
@@ -100,6 +108,7 @@ export function createJob(task, ...args) {
         if (job.status !== JobStatus.InProgress) return;
         job.status = JobStatus.Complete;
         job.progress = 100;
+        job.stats = stats;
         emitter.emit(JobEvents.Complete, { status: job.status, progress: 100, stats });
         
         scheduleCleanup(id, JobCleanupDelayInMs);
