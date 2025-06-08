@@ -193,13 +193,11 @@ function scheduleCleanup(jobId, delayInMs) {
         logger.debug('Job IDs in memory before cleanup:', Object.keys(jobs));
         
         // Emit a cleanup event if needed, for any listeners to handle.
-        job.emitter.emit(JobEvents.Cleanup);
+        job.emitter?.emit(JobEvents.Cleanup);
 
-        // Remove all listeners for all job events.
-        Object.values(JobEvents).forEach(event => {
-            emitter.removeAllListeners(event);
-        });
-
+        // Remove all listeners.
+        job.emitter?.removeAllListeners();
+        
         delete jobs[jobId];
         logger.info(`Cleaned up job ${jobId}.`);
 
