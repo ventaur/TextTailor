@@ -271,6 +271,7 @@ form.addEventListener(EventSubmit, (e) => {
 });
 
 function wireUpCancelButton(...jobIds) {    
+    cancelBtn.textContent = 'Cancel';
     cancelBtn.addEventListener(
         EventClick, 
         async function handleClick(e) {
