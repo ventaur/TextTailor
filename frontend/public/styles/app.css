@@ -113,7 +113,7 @@ a:hover {
     margin-bottom: var(--spacing-lg);
 }
 
-label {
+label, .label {
     display: block;
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-bold);

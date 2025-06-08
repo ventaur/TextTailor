@@ -50,6 +50,7 @@ const pageStatus = document.getElementById('pageStatus');
 const summary = document.getElementById('summary');
 
 
+let isFinished = false;
 let completedJobCount = 0;
 let summaryStats = {};
 
@@ -69,6 +70,7 @@ async function start() {
     });
     
     const { postJobId, pageJobId } = await res.json();
+    isFinished = false;
     completedJobCount = 0;
     summaryStats = {};
 
@@ -239,7 +241,8 @@ function onJobComplete(jobType, stats) {
     completedJobCount++;
     
     // If both jobs are complete, show a summary and change the cancel button's text.
-    if (completedJobCount === 2) {
+    isFinished = (completedJobCount === 2);
+    if (isFinished) {
         showSummary();
         progressHeading.textContent = 'All Jobs Completed';
         cancelBtn.textContent = 'Close';
@@ -270,9 +273,13 @@ form.addEventListener(EventSubmit, (e) => {
 function wireUpCancelButton(...jobIds) {    
     cancelBtn.addEventListener(
         EventClick, 
-        async function handleClick() {
-            const responses = await Promise.all(jobIds.map(id => fetch(`${UrlCancelJob}/${id}`, { method: MethodPost })));
-            // TODO: Handle the responses to check if the cancellation was successful.
+        async function handleClick(e) {
+            e.preventDefault();
+
+            if (!isFinished) {
+                const responses = await Promise.all(jobIds.map(id => fetch(`${UrlCancelJob}/${id}`, { method: MethodPost })));
+                // TODO: Handle the responses to check if the cancellation was successful.
+            }
 
             hideProgressSection();
 
