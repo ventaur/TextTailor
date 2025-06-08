@@ -221,7 +221,7 @@ function showSummary() {
         summaryHtml += `
             <div class="alert alert-warning">
                 <strong>Warning:</strong> Some matches in articles could not be replaced. 
-                This typically happens when some text to replace has different casing or mixed formatting (e.g., bold, italic) 
+                This typically happens when some text to replace has mixed formatting (e.g., bold, italic) 
                 or is partially included in a link.
             </div>
         `;
