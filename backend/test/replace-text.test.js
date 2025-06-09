@@ -137,7 +137,6 @@ describe('replace-text', function () {
         expect(postEdit.isDone()).to.be.true;
         expect(pageEdit.isDone()).to.be.true;
         
-        
         // Verify the payloads have the replacements.
         expectMatchesInArticle(editedPosts[0], replacementText, 3);
         expectNoMatchesInArticle(editedPosts[0], textToReplace);
@@ -188,7 +187,13 @@ describe('replace-text', function () {
 
         // Act.
         await replaceText(req, res);
-        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Wait for jobs to finish.
+        const json = getJson();
+        const postJob = getJob(json.postJobId);
+        const pageJob = getJob(json.pageJobId);
+        await waitForJobToFinish(postJob);
+        await waitForJobToFinish(pageJob);
 
         // Verify that edit was NOT called.
         expect(postEdit.isDone()).to.be.false;
@@ -215,7 +220,6 @@ describe('replace-text', function () {
 
         // Act.
         await replaceText(req, res);
-
         
         // Wait for jobs to finish.
         const json = getJson();
